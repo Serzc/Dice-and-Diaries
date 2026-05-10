@@ -1,0 +1,80 @@
+:root {
+  /* ----- Morados (Principales) ----- */
+  --color-purple-900: #2e1a3e;
+  --color-purple-800: #4a2b65;
+  --color-purple-700: #633d85;
+  --color-purple-600: #7c4fa0;
+  --color-purple-500: #9561bb;
+  --color-purple-400: #b587d4;
+  --color-purple-300: #d0aee8;
+  --color-purple-200: #e5d1f5;
+  --color-purple-100: #f3eafa;
+
+  /* ----- Cafés (Secundarios) ----- */
+  --color-brown-900: #3e2a1b;
+  --color-brown-800: #5c3d29;
+  --color-brown-700: #7a5033;
+  --color-brown-600: #98633d;
+  --color-brown-500: #b67a4a;
+  --color-brown-400: #c9996b;
+  --color-brown-300: #dcb791;
+  --color-brown-200: #eed5ba;
+  --color-brown-100: #f8efe4;
+
+  /* ----- Grises ----- */
+  --color-gray-900: #1f1f1f;
+  --color-gray-800: #2e2e2e;
+  --color-gray-700: #404040;
+  --color-gray-600: #555555;
+  --color-gray-500: #717171;
+  --color-gray-400: #909090;
+  --color-gray-300: #b0b0b0;
+  --color-gray-200: #d1d1d1;
+  --color-gray-100: #e8e8e8;
+  --color-gray-50:  #f5f5f5;
+
+  /* ----- Blancos ----- */
+  --color-white: #ffffff;
+  --color-off-white: #fbf9f7;   /* ligeramente cálido */
+
+  /* ----- Asignaciones semánticas ----- */
+  --color-primary: var(--color-purple-600);
+  --color-primary-hover: var(--color-purple-700);
+  --color-primary-light: var(--color-purple-200);
+  --color-primary-bg: var(--color-purple-100);
+
+  --color-secondary: var(--color-brown-500);
+  --color-secondary-hover: var(--color-brown-600);
+  --color-secondary-light: var(--color-brown-200);
+  --color-secondary-bg: var(--color-brown-100);
+
+  --color-background: var(--color-off-white);
+  --color-surface: var(--color-white);
+  --color-surface-hover: var(--color-gray-50);
+
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-muted: var(--color-gray-500);
+  --color-text-on-primary: var(--color-white);
+  --color-text-on-secondary: var(--color-white);
+
+  --color-border: var(--color-gray-200);
+  --color-divider: var(--color-gray-100);
+
+  --color-success: #2b5930;      /* verde oscuro para badges de activo */
+  --color-success-bg: #e0f2e2;
+  --color-error: #b82c2c;
+  --color-error-bg: #fce9e9;
+  --color-warning: #8a6300;
+  --color-warning-bg: #fff4d6;
+
+  /* Sombras con opacidad */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+
+  /* Bordes redondeados */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}

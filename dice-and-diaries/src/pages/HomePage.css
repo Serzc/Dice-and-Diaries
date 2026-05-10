@@ -1,0 +1,107 @@
+/* src/pages/HomePage.css */
+
+.home-page {
+  padding: 2rem 10rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+}
+
+.page-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Columna de campañas */
+.campaigns-section {
+  background-color: var(--color-surface);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.campaigns-section h2 {
+  font-size: 1.4rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.campaigns-section h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 1rem;
+}
+
+.empty-message {
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.campaign-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* Barra lateral */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar-section {
+  background-color: var(--color-surface);
+  padding: 1.2rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-section h2 {
+  font-size: 1.2rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-text {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+}
+
+.profile-link {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-secondary);
+  color: var(--color-text-on-secondary);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.2s;
+}
+
+.profile-link:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+/* Responsivo: en pantallas pequeñas, una columna */
+@media (max-width: 700px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+}
