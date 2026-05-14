@@ -1,0 +1,36 @@
+.campaigns-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.page-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.campaign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+}
+
+.empty-message {
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+}

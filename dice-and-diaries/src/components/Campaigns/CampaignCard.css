@@ -1,0 +1,76 @@
+/* Tarjeta de campaña de ancho completo */
+.campaign-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-surface);
+  padding: 1.2rem 1.5rem;
+  border-left: 6px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.campaign-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.campaign-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.campaign-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.campaign-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.gm-badge {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.status-badge.active {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.status-badge.inactive {
+  background-color: var(--color-gray-100);
+  color: var(--color-text-muted);
+}
+
+.campaign-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Override botón para que sea más compacto si se desea */
+.campaign-actions .primary-button {
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+}
