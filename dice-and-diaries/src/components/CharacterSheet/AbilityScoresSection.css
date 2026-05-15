@@ -17,26 +17,53 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.ability-item:nth-child(odd) {
+  background-color: var(--color-gray-50);
 }
 
 .ability-name {
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--color-text-secondary);
   width: 3rem;
 }
 
 .score-value {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--color-text-primary);
-  width: 2rem;
+  width: 2.5rem;
   text-align: center;
 }
 
 .modifier-value {
+  font-size: 0.82rem;
   font-weight: 700;
+  background-color: var(--color-primary-bg);
+  color: var(--color-purple-800);
+  width: 2.4rem;
+  text-align: center;
+  padding: 0.15rem 0;
+  border-radius: var(--radius-sm);
+}
+
+/* Edit/save toggle button for this section */
+.ability-scores-section > .primary-button {
+  background: transparent;
   color: var(--color-primary);
-  width: 2rem;
-  text-align: right;
+  border-color: var(--color-primary);
+  margin-top: 0.5rem;
+}
+
+.ability-scores-section > .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+  box-shadow: none;
 }
 
 .score-input {

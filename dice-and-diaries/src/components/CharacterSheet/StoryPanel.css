@@ -7,15 +7,37 @@
 }
 .story-textarea {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid var(--color-border);
+  padding: 0.6rem 0.7rem;
+  border: 1.5px solid var(--color-gray-300);
   border-radius: var(--radius-sm);
   resize: vertical;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
   color: var(--color-text-primary);
   background-color: var(--color-background);
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
+
+.story-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
 .story-actions {
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+/* Story save button: outlined */
+.story-actions .primary-button {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.story-actions .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+  box-shadow: none;
 }

@@ -18,24 +18,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.1s;
+}
+
+.proficiency-row:nth-child(odd) {
+  background-color: var(--color-gray-50);
 }
 
 .prof-ability-name {
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--color-text-secondary);
   width: 3rem;
 }
 
 .prof-total-mod {
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--color-text-primary);
   width: 2rem;
   text-align: center;
 }
 
 .prof-indicator {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.3rem;
+  height: 1.3rem;
   border-radius: 50%;
   cursor: help;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  outline: 2px solid rgba(0,0,0,0.12);
+  outline-offset: 1px;
 }

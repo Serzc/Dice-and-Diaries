@@ -16,8 +16,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.3rem 0;
+  padding: 0.3rem 0.3rem;
   border-bottom: 1px solid var(--color-border);
+}
+
+.prof-entry:nth-child(odd) {
+  background-color: var(--color-gray-50);
 }
 
 .view-row, .edit-row {
@@ -36,10 +40,55 @@
   gap: 0.2rem;
 }
 
+/* Ghost/tiny buttons for in-row edit and delete */
+.prof-actions .primary-button {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  padding: 0.1rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+.prof-actions .primary-button:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-gray-400);
+  box-shadow: none;
+}
+
 .add-prof-row {
   display: flex;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
+
 .add-prof-row input {
   flex: 1;
+  padding: 0.35rem 0.6rem;
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+}
+
+.add-prof-row input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+/* "Agregar" button in add row: outlined */
+.add-prof-row .primary-button {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  padding: 0.28rem 0.65rem;
+  font-size: 0.82rem;
+}
+
+.add-prof-row .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+  box-shadow: none;
 }

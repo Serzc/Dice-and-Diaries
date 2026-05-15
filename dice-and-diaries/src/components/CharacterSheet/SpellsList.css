@@ -12,16 +12,35 @@
   gap: 1rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .ability-selector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  font-size: 0.875rem;
 }
 
 .spell-stats {
   display: flex;
   gap: 1rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-purple-800);
+}
+
+/* "Agregar hechizo" button in the header */
+.spellcasting-header .primary-button {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  font-size: 0.8rem;
+  padding: 0.28rem 0.65rem;
+}
+
+.spellcasting-header .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+  box-shadow: none;
 }

@@ -9,7 +9,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+/* "Agregar" button in the panel header */
+.panel-header .primary-button {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  font-size: 0.8rem;
+  padding: 0.28rem 0.65rem;
+}
+
+.panel-header .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+  box-shadow: none;
 }
 .items-list {
   display: flex;

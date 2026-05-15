@@ -7,39 +7,59 @@
   justify-content: space-between;
   align-items: center;
   background: var(--color-purple-100);
-  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-purple-200);
+  padding: 0.45rem 0.85rem;
   border-radius: var(--radius-sm);
   margin-bottom: 0.5rem;
 }
 
 .level-header h4 {
   margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
   color: var(--color-purple-800);
 }
 
 .slot-manager {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .slot-display {
-  font-weight: bold;
-  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-purple-800);
+  min-width: 2.5rem;
+  text-align: center;
 }
 
 .slot-btn {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  width: 24px;
-  height: 24px;
+  background: transparent;
+  border: 1.5px solid var(--color-purple-400);
+  color: var(--color-purple-700);
+  border-radius: var(--radius-sm);
+  width: 22px;
+  height: 22px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  padding: 0;
+  line-height: 1;
+}
+
+.slot-btn:hover:not(:disabled) {
+  background: var(--color-purple-200);
 }
 
 .slot-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 

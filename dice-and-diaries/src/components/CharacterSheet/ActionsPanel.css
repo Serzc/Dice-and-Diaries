@@ -15,5 +15,19 @@
 .add-item-btn {
   display: flex;
   justify-content: center;
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+/* "+" add button — circular primary */
+.add-item-btn .primary-button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

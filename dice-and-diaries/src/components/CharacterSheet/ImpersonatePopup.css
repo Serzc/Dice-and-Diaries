@@ -9,5 +9,24 @@
 }
 
 .campaign-list li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+/* Campaign select buttons: full-width, outlined */
+.campaign-list .primary-button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-gray-300);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+}
+
+.campaign-list .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: none;
 }
