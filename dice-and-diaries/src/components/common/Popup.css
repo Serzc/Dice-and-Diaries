@@ -1,0 +1,44 @@
+/* Reutiliza o sobreescribe el estilo de modales. */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background-color: var(--color-surface);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  width: 90%;
+}
+
+.popup-content h3 {
+  margin-top: 0;
+  color: var(--color-text-primary);
+}
+
+.campaign-list-popup {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.campaign-list-popup li {
+  margin-bottom: 0.5rem;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
