@@ -1,0 +1,25 @@
+.features-section {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1rem;
+}
+
+.recarga-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.add-feature-btn {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}

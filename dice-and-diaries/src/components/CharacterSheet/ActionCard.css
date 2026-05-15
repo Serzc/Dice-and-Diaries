@@ -1,0 +1,52 @@
+.action-card {
+  background-color: var(--color-surface);
+  border-left: 4px solid var(--color-secondary);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.action-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-name {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.action-uses {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.uses-display {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.uses-display.depleted {
+  color: var(--color-error);
+}
+
+.recharge-badge {
+  font-size: 0.75rem;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  padding: 0.15rem 0.4rem;
+  border-radius: 8px;
+}
+
+.action-desc {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0.5rem 0;
+}
+
+.action-controls {
+  display: flex;
+  gap: 0.3rem;
+}

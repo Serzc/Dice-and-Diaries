@@ -1,0 +1,36 @@
+Sigue una página importante: el character sheet. Es importante que todo cambio realizado aquí se refleje en la base de datos. La manera en la que se guarda la información es un poco específica, así que crea un espacio en el que se pueda traducir los datos obtenidos en la llamada hacia el formato que utilices y viceversa. Aquí vamos a manejarlo por bloques, cada sección se deberá ver en su propio rectangulo (por el tamaño, esta página es scrolleable), para facilidad, te diré donde se ubica cada sección mediante filas y columnas:
+Información general: fila 1, todo el ancho
+Ability Scores: fila 2, columna 1
+Habilidades: fila 2, columna 2
+Información de combate: fila 2, columna 3
+Acciones: fila 3, columna 1 
+Bonus Actions: fila 3, columna 2 
+Other Proficiencies:fila 4, columna 1
+Features: fila 4, columna 2
+hechizos: fila 5, col 1
+Inventario: fila 5, col 2
+Historia: fila 6, todo el ancho
+Impersonar: fila 7
+---
+Contenido en cada sección:
+Parte de la gracia de la aplicación es automatizar procesos de cálculos, por lo que se debe actualizar según contenido en los distintos lugares.
+Información general: en columnas 2x2: Nombre de personaje, clase(s), especie, background; sigue hacia la derecha: nivel, retrato, lapicito (editar). Editar permite modificar los campos anteriores. El botón de editar se convierte en un check que muestra un popup de guardar cambios. Los cambios se guardan en la bd
+Ability Scores: Desgloce vertical estándar de ability score y ability modifier. Abajo tiene un botón de editar, mismo comportamiento que el anterior, solamente que para esta sección.
+Ability Proficiencies: Desgloce vertical de los ability proficiencies, cada uno tiene: nombre, modificador, casilla indicadora por color (normal, proficiente, experto), la casilla incluye un hover over para saber qué significa el color.
+Info de combate: AC (calculado según información en Features, Abilities e Inventario), iniciativa (calculado según información en Features, Abilities e Inventario), velocidad campo editable, HPMax(campo editable), current HP(campo editable), tempHP(campo editable), hit die: type, total, remaining
+Acciones: Lista vertical de las acciones (actionCard) del personaje, abajo iría, en vez de un card, un rectangulo con "+" con un popup para agregar una nueva. Cada acción tiene:
+- Nombre, cantidad de usos (restantes/totales), breve desc, botón de utilizar (gastar uso), boton de editar (comportamiento por acción; igual que mencionado antes.), Periodo de recarga (PerTurn,SR,LR).
+Bonus Actions: Igual que acciones
+Other Proficiencies: Listado de otras proficiencies. Meramente campos textuales cortos. Cada entrada puede ser editada o eliminada. La última casilla es un botón de agregar.
+Features: Botones de: Turno, Descanso Corto, Descanso Largo (recargan las acciones, bonus actions, y features correspondientes)Listado vertical de featureCard. Cada Feature tiene:
+- Nombre, desc, efecto, boton de edición, boton de borrado
+Al final hay un rectangulo con "+" que crea un popup con un formulario para crear nuevo feature. El formulario contiene:
+- Nombre, desc, efecto.
+-- Efecto es muy variable, por lo que requiere su propia sección. Puede tener: 
+--- Periodo de recarga (PerTurn,SR,LR), usos (restantes/totales), modificadores a ability scores o ability proficiencies, crear una nueva acción, bonus action o reacción.
+-- El campo de efecto es guardado y leido como un formato específico, según los datos proporcionados, decide el formato textual en el que se guardan (ej. json como {action:{attack:{damage:"3d6 poison",range:"cone 5ft"},recharge:"sr",uses:2}})
+hechizos: listado vertical de spellCard. Arriba en la sección: spellcasting ability (editable), spellcasting mod, spellsave dc, agregar hechizo. El listado está separado por los niveles de hechizo, en el header de cada sección vendrá: nivel, spell slots, spells expent, botón de gastar y recuperar spell slot.
+Cada spellCard tiene: desc, marcador de ritual y concentracion, checkbox de preparado, efecto. Para efecto utiliza un sistema similar al descrito en Features
+Inventario: Listado vertical de items, incluye en el header de la sección: boton de agregar. Cada itemCard tiene: nombre, peso, cantidad, desc (optional), efecto (sistema similar que features), equipar (depende de campo "equipable" en efecto), editar y borrar
+Historia: Cada personaje tendrá una notada asociada a él automaticamente, el contenido de aquí es el mismo que la nota.
+Impersonar: Pop up de las campañas a las que pertenece el pj. Al seleccionar una, es redirigido al chat de esa campaña impersonando a ese personaje.

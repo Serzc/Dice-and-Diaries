@@ -1,0 +1,16 @@
+.spell-popup {
+  min-width: 400px;
+}
+
+.check-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,36 @@
+.combat-section {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.combat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.combat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.combat-item label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.15rem;
+}
+
+.combat-value {
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+}
+
+input {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}

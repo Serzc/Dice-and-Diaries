@@ -1,0 +1,41 @@
+.proficiencies-section {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.proficiencies-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.proficiency-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prof-ability-name {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  width: 3rem;
+}
+
+.prof-total-mod {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  width: 2rem;
+  text-align: center;
+}
+
+.prof-indicator {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  cursor: help;
+}

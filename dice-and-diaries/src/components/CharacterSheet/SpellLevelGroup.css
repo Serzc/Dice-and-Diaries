@@ -1,0 +1,50 @@
+.spell-level-group {
+  margin-bottom: 1.5rem;
+}
+
+.level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-purple-100);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+}
+
+.level-header h4 {
+  margin: 0;
+  color: var(--color-purple-800);
+}
+
+.slot-manager {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.slot-display {
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.slot-btn {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.slot-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-spells {
+  font-style: italic;
+  color: var(--color-text-muted);
+  padding: 0.5rem;
+}

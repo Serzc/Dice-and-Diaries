@@ -1,0 +1,21 @@
+.story-panel {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1rem;
+}
+.story-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+}
+.story-actions {
+  margin-top: 0.5rem;
+}

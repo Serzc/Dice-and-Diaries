@@ -1,0 +1,18 @@
+.inventory-panel {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1rem;
+}
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

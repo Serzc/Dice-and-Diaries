@@ -1,0 +1,13 @@
+.impersonate-popup {
+  min-width: 300px;
+}
+
+.campaign-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.campaign-list li {
+  margin-bottom: 0.5rem;
+}

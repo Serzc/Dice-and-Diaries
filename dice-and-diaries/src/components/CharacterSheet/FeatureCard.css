@@ -1,0 +1,44 @@
+.feature-card {
+  background-color: var(--color-surface);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.feature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feature-name {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.feature-actions {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.feature-uses {
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+.feature-desc {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0.5rem 0;
+}
+
+.feature-effect-summary {
+  margin-top: 0.5rem;
+}
+
+.effect-summary {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
