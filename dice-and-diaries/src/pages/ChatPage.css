@@ -29,6 +29,41 @@ body:has(.chat-page-container) #root {
   font-weight: 600;
 }
 
+/* Possess banner */
+.possess-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 1.5rem;
+  background: rgba(124, 58, 237, 0.2);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.35);
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.possess-banner strong {
+  color: var(--color-white);
+}
+
+.possess-release-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.possess-release-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;

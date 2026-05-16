@@ -11,6 +11,7 @@ const ChatPage = () => {
   const [chatData, setChatData] = useState(null);
   const [messages, setMessages] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [possessedNPC, setPossessedNPC] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -34,10 +35,10 @@ const ChatPage = () => {
     if (!chatData) return;
     const msg = {
       senderId: chatData.currentUser.id,
-      senderUsername: chatData.currentUser.username,
-      characterId: null,
-      characterName: null,
-      characterAvatar: null,
+      senderUsername: possessedNPC ? possessedNPC.name : chatData.currentUser.username,
+      characterId: possessedNPC ? possessedNPC.id : null,
+      characterName: possessedNPC ? possessedNPC.name : null,
+      characterAvatar: possessedNPC ? possessedNPC.avatar : null,
       type: textData.type,
       content: textData.content,
       isWhisper: false,
@@ -97,6 +98,14 @@ const ChatPage = () => {
     <div className="chat-page-container">
       <div className="chat-main-area">
         <h1 className="chat-title">{chatData.campaign.name} – Chat</h1>
+        {possessedNPC && (
+          <div className="possess-banner" role="alert">
+            <span>Hablando como <strong>{possessedNPC.name}</strong></span>
+            <button className="possess-release-btn" onClick={() => setPossessedNPC(null)}>
+              Soltar
+            </button>
+          </div>
+        )}
         <div className="messages-container" role="log" aria-live="polite">
           {messages.map((msg) => (
             <ChatMessage
@@ -124,6 +133,7 @@ const ChatPage = () => {
           onSendWhisper={handleSendWhisper}
           onSendNoteAppend={handleSendNoteAppend}
           onSendAbilityAppend={handleSendAbilityAppend}
+          onPossessNPC={setPossessedNPC}
         />
       )}
     </div>

@@ -38,7 +38,7 @@ const CampaignCard = ({ campaign, isGM }) => {
             <>
               <button
                 className="campaign-nav-btn"
-                onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
+                onClick={() => navigate(`/creatures`)}
                 aria-label={`NPCs de ${campaign.name}`}
               >
                 NPCs
@@ -58,7 +58,7 @@ const CampaignCard = ({ campaign, isGM }) => {
         {isGM ? (
           <button
             className="btn-start-session"
-            onClick={() => navigate(`/campaigns/${campaign.id}/start`)}
+            onClick={() => navigate(`/campaigns/${campaign.id}/chat`)}
             aria-label={`Iniciar sesión de ${campaign.name}`}
           >
             Empezar Sesión

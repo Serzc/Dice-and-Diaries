@@ -303,8 +303,9 @@ export async function fetchChatData(campaignId) {
     ],
     // NPCs de la campaña (solo el GM los ve)
     npcs: [
-      { id: 201, name: "Espectro del Bosque", avatar: null },
-      { id: 202, name: "Goblin Mensajero", avatar: null },
+      { id: 201, name: "Espectro del Bosque", creatureId: "c4", avatar: null },
+      { id: 202, name: "Goblin Mensajero", creatureId: "c1", avatar: null },
+      { id: 203, name: "Capitán Hobgoblin", creatureId: "c2", avatar: null },
     ],
     // Usuarios conectados (para susurros)
     onlineUsers: [

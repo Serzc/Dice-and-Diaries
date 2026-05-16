@@ -12,7 +12,10 @@ import CharacterSheetPage from "./pages/CharacterSheetPage";
 import ChatPage from "./pages/ChatPage";
 import CreaturesPage from "./pages/CreaturesPage";
 import CreatureSheetPage from "./pages/CreatureSheetPage";
-//import PlanSessionPage from "./pages/PlanSessionPage";
+import ProfilePage from "./pages/ProfilePage";
+import PlannerPage from "./pages/PlannerPage";
+import CampaignNotesPage from "./pages/CampaignNotesPage";
+import CampaignPlayersPage from "./pages/CampaignPlayersPage";
 
 import "./App.css";
 
@@ -33,7 +36,10 @@ function AppContent() {
         <Route path="/creatures" element={<CreaturesPage />} />
         <Route path="/creatures/folder/:folderId" element={<CreaturesPage />} />
         <Route path="/creatures/:creatureId" element={<CreatureSheetPage />} />
-        {/* <Route path="/plan-session" element={<PlanSessionPage />} /> */}
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/calendar" element={<PlannerPage />} />
+        <Route path="/campaigns/:campaignId/notes" element={<CampaignNotesPage />} />
+        <Route path="/campaigns/:campaignId/players" element={<CampaignPlayersPage />} />
       </Routes>
     </>
   );

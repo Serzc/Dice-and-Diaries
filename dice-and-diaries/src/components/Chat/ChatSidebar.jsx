@@ -7,7 +7,7 @@ import WhisperPopup from "./WhisperPopup";
 import NPCsPopup from "./NPCsPopup";
 import "./ChatSidebar.css";
 
-const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, onSendDiceRoll, onSendWhisper, onSendAbilityAppend, onSendNoteAppend }) => {
+const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, onSendDiceRoll, onSendWhisper, onSendAbilityAppend, onSendNoteAppend, onPossessNPC }) => {
   const [activePopup, setActivePopup] = useState(null);
 
   const closePopup = () => setActivePopup(null);
@@ -80,7 +80,11 @@ const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, onSendDiceRol
         />
       )}
       {activePopup === "npcs" && (
-        <NPCsPopup npcs={npcs} onClose={closePopup} />
+        <NPCsPopup
+          npcs={npcs}
+          onClose={closePopup}
+          onPossess={(npc) => { onPossessNPC && onPossessNPC(npc); closePopup(); }}
+        />
       )}
     </aside>
   );

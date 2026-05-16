@@ -1,0 +1,244 @@
+/* src/pages/CampaignNotesPage.css */
+
+body:has(.cn-page) {
+  background-color: var(--color-gray-900);
+}
+
+body:has(.cn-page) #root {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.cn-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 5rem;
+  min-height: calc(100svh - 56px);
+  position: relative;
+}
+
+.cn-loading, .cn-empty {
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 3rem 1rem;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+/* Header */
+.cn-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.cn-back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--color-white);
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  margin-top: 0.15rem;
+}
+
+.cn-back-btn:hover { background: rgba(255, 255, 255, 0.18); }
+
+.cn-page-title {
+  font-size: 1.6rem;
+  color: var(--color-white);
+  font-weight: 700;
+  margin: 0 0 0.15rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cn-campaign-name {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Note list */
+.cn-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cn-note-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid var(--color-gray-100);
+}
+
+.cn-note-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+}
+
+.cn-note-title-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  text-align: left;
+  min-width: 0;
+}
+
+.cn-note-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cn-note-title-btn:hover .cn-note-title {
+  color: var(--color-primary);
+}
+
+.cn-note-chevron {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.cn-note-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cn-visibility-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cn-visibility-badge.public {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+
+.cn-visibility-badge.private {
+  background: rgba(156, 163, 175, 0.15);
+  color: var(--color-text-muted);
+}
+
+.cn-note-date {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+/* Expanded body */
+.cn-note-body {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: 0.75rem;
+  animation: note-enter 0.1s ease-out;
+}
+
+@keyframes note-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cn-note-content {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 0.75rem;
+  white-space: pre-wrap;
+}
+
+.cn-note-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cn-action-btn {
+  background: var(--color-gray-100);
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cn-action-btn:hover {
+  background: var(--color-gray-200);
+}
+
+.cn-action-delete {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.cn-action-delete:hover {
+  background: #fecaca;
+}
+
+/* Delete confirm button */
+.cn-delete-btn {
+  background-color: #dc2626 !important;
+  color: white !important;
+}
+
+.cn-delete-btn:hover {
+  background-color: #b91c1c !important;
+}
+
+/* FAB */
+.cn-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-size: 1.8rem;
+  line-height: 1;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s, transform 0.2s;
+  z-index: 900;
+}
+
+.cn-fab:hover {
+  background-color: var(--color-primary-hover);
+  transform: scale(1.08);
+}

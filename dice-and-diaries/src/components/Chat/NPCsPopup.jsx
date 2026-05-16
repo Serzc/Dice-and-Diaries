@@ -1,24 +1,64 @@
+// src/components/Chat/NPCsPopup.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../common/Popup.css";
 
-const NPCsPopup = ({ npcs, onClose }) => {
+const NPCsPopup = ({ npcs, onClose, onPossess }) => {
+  const navigate = useNavigate();
+
+  const handleViewSheet = (npc) => {
+    onClose();
+    navigate(`/creatures/${npc.creatureId}`);
+  };
+
+  const handlePossess = (npc) => {
+    onPossess && onPossess(npc);
+    onClose();
+  };
+
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="NPCs de la campaña">
-      <div className="popup-content" onClick={e => e.stopPropagation()}>
+    <div
+      className="popup-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="NPCs de la campaña"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="popup-content" onClick={(e) => e.stopPropagation()}>
         <div className="popup-header">
           <h3 className="popup-title">NPCs</h3>
-          <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
+          <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
         </div>
 
         <div className="popup-body">
           {npcs.length === 0 ? (
             <p className="popup-empty">No hay NPCs en esta campaña.</p>
           ) : (
-            <ul className="popup-list" role="list">
-              {npcs.map(npc => (
-                <li key={npc.id}>{npc.name}</li>
+            <div className="popup-list" role="list">
+              {npcs.map((npc) => (
+                <li key={npc.id} role="listitem" className="npc-list-item">
+                  <span className="npc-name">{npc.name}</span>
+                  <div className="npc-actions">
+                    {npc.creatureId && (
+                      <button
+                        className="npc-action-btn"
+                        onClick={() => handleViewSheet(npc)}
+                        aria-label={`Ver hoja de ${npc.name}`}
+                      >
+                        Ver hoja
+                      </button>
+                    )}
+                    <button
+                      className="npc-action-btn npc-possess-btn"
+                      onClick={() => handlePossess(npc)}
+                      aria-label={`Poseer a ${npc.name}`}
+                    >
+                      Poseer
+                    </button>
+                  </div>
+                </li>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 

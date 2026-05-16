@@ -87,7 +87,7 @@ const HomePage = () => {
                 <button
                   key={camp.id}
                   className="plan-campaign-btn"
-                  onClick={() => alert(`Planificar ${camp.name}`)}
+                  onClick={() => navigate('/calendar')}
                 >
                   {camp.name}
                 </button>
