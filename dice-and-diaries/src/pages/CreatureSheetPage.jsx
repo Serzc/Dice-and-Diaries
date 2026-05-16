@@ -1,7 +1,7 @@
 // src/pages/CreatureSheetPage.jsx
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchCreature, saveCreature, currentUser, fmtMod } from "../mock/creaturesMock";
+import { fetchCreature, saveCreature, currentUser, fmtMod } from "../mock/db";
 import "./CreatureSheetPage.css";
 
 const ABILITIES = [

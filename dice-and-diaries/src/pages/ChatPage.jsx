@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { fetchChatData, sendMessage as sendMessageApi } from "../mock/chatMock";
+import { fetchChatData, sendMessage as sendMessageApi } from "../mock/db";
 import ChatMessage from "../components/Chat/ChatMessage";
 import ChatInput from "../components/Chat/ChatInput";
 import ChatSidebar from "../components/Chat/ChatSidebar";

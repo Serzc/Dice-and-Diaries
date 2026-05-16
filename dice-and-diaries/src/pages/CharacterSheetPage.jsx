@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCharacterSheet, saveCharacterSection } from "../mock/characterSheetMock";
+import { fetchCharacterSheet, saveCharacterSection } from "../mock/db";
 import { fromDatabase, toDatabase } from "../utils/characterDataAdapter";
 import GeneralInfo from "../components/CharacterSheet/GeneralInfo";
 import AbilityScoresSection from "../components/CharacterSheet/AbilityScoresSection";
@@ -32,23 +32,21 @@ const CharacterSheetPage = () => {
     });
   }, [id]);
 
-  // Función genérica para actualizar partes del personaje y guardar en BD
   const updateCharacter = useCallback((partialData) => {
     setCharacter(prev => {
       const updated = { ...prev, ...partialData };
-      // Recalcular campos dependientes después de ciertos cambios
-      // Como los cálculos de AC, iniciativa ya los hace fromDatabase, 
-      // podríamos llamar a fromDatabase de nuevo con los datos completos,
-      // pero eso requeriría convertir a formato raw y luego de vuelta.
-      // Para simplificar, confiamos en que el estado ya está actualizado.
-      // En un caso real, se recalcularía aquí o se delegaría al adaptador.
+      // Persist core stats in DB format; section-specific arrays saved by key name
+      const coreKeys = ["name","classes","species","background","level","imageUrl","abilityScores","combatInfo","saveProficiencies","skillProficiencies","abilityProficiencies"];
+      const isCore = Object.keys(partialData).some(k => coreKeys.includes(k));
+      if (isCore) {
+        saveCharacterSection(id, "core", toDatabase(updated));
+      } else {
+        const [section, value] = Object.entries(partialData)[0];
+        saveCharacterSection(id, section, value);
+      }
       return updated;
     });
-    // Simulación de guardado: convertimos a formato BD y "enviamos"
-    const raw = toDatabase({ ...character, ...partialData });
-    console.log("Guardando en BD:", raw);
-    // Aquí iría una llamada a la API real
-  }, [character]);
+  }, [id]);
 
   if (loading || !character) return <div className="loading">Cargando hoja de personaje...</div>;
 

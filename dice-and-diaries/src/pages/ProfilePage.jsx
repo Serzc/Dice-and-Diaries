@@ -1,6 +1,6 @@
 // src/pages/ProfilePage.jsx
 import React, { useEffect, useState } from "react";
-import { fetchProfile, saveProfile } from "../mock/profileMock";
+import { fetchProfile, saveProfile } from "../mock/db";
 import "./ProfilePage.css";
 
 const STAT_LABELS = {

@@ -1,7 +1,7 @@
 // src/pages/CampaignPlayersPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchCampaignPlayers, kickPlayer, invitePlayer } from "../mock/playersMock";
+import { fetchCampaignPlayers, kickPlayer, invitePlayer } from "../mock/db";
 import "../components/common/Popup.css";
 import "./CampaignPlayersPage.css";
 

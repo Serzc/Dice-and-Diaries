@@ -1,7 +1,7 @@
 // src/pages/CreaturesPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchCreaturesInFolder, currentUser } from "../mock/creaturesMock";
+import { fetchCreaturesInFolder, currentUser } from "../mock/db";
 import CreatureListItem from "../components/Creatures/CreatureListItem";
 import CreateCreaturePopup from "../components/Creatures/CreateCreaturePopup";
 import "./CreaturesPage.css";

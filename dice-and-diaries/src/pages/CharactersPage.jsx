@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchUserCharacters } from "../mock/charactersMock";
+import { fetchUserCharacters } from "../mock/db";
 import CharacterCard from "../components/Characters/CharacterCard";
 import CreateCharacterPopup from "../components/Characters/CreateCharacterPopup";
 import Button from "../components/common/Button";

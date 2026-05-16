@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchOtherProficiencies } from "../../mock/characterSheetMock";
+import { fetchOtherProficiencies } from "../../mock/db";
 import Button from "../common/Button";
 import "./OtherProficienciesPanel.css";
 

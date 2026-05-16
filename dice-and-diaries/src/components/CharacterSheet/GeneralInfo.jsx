@@ -19,7 +19,7 @@ const GeneralInfo = ({ character, onSave }) => {
         ...edited,
         classes: edited.classes.split("/").map(c => c.trim()).filter(Boolean),
       };
-      onSave({ generalInfo: updated });
+      onSave({ name: updated.name, classes: updated.classes, species: updated.species, background: updated.background, level: updated.level });
       setIsEditing(false);
     } else {
       // Reiniciar campos al estado actual del personaje

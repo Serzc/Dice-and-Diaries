@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchHomeData } from "../mock/homeMock";
+import { fetchHomeData } from "../mock/db";
 import HomeCampaignCard from "../components/Home/HomeCampaignCard";
 import "./HomePage.css";
 

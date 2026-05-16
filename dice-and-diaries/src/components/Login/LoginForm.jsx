@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FormInput from "./FormInput";
 import Button from "../common/Button";
-import { loginUser } from "../../mock/authMock";
+import { loginUser } from "../../mock/db";
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");

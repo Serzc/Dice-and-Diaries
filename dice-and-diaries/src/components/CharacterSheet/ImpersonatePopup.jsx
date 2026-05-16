@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchCharacterCampaigns } from "../../mock/characterSheetMock";
+import { fetchCharacterCampaigns } from "../../mock/db";
 import "../common/Popup.css";
 import "./ImpersonatePopup.css";
 

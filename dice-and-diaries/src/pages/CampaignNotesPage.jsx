@@ -1,7 +1,7 @@
 // src/pages/CampaignNotesPage.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchCampaignNotes, createNote, updateNote, deleteNote } from "../mock/notesMock";
+import { fetchCampaignNotes, createNote, updateNote, deleteNote } from "../mock/db";
 import "../components/common/Popup.css";
 import "./CampaignNotesPage.css";
 

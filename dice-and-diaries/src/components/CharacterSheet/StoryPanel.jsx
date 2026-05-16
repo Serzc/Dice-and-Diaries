@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchCharacterNote } from "../../mock/characterSheetMock";
+import { fetchCharacterNote } from "../../mock/db";
 import Button from "../common/Button";
 import "./StoryPanel.css";
 

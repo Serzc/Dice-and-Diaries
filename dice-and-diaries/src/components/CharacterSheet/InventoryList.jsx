@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchInventory } from "../../mock/characterSheetMock";
+import { fetchInventory } from "../../mock/db";
 import ItemCard from "./ItemCard";
 import ItemFormPopup from "./ItemFormPopup";
 import Button from "../common/Button";
@@ -25,19 +25,19 @@ const InventoryList = ({ characterId, onSave }) => {
   };
 
   const handleSaveItem = (item) => {
-    if (editingItem) {
-      setItems(prev => prev.map(i => i.id === item.id ? item : i));
-    } else {
-      setItems(prev => [...prev, item]);
-    }
+    const updated = editingItem
+      ? items.map(i => i.id === item.id ? item : i)
+      : [...items, { ...item, id: item.id || Date.now() }];
+    setItems(updated);
     setShowForm(false);
     setEditingItem(null);
-    onSave && onSave(items);
+    onSave && onSave(updated);
   };
 
   const handleDelete = (id) => {
-    setItems(prev => prev.filter(i => i.id !== id));
-    onSave && onSave(items);
+    const updated = items.filter(i => i.id !== id);
+    setItems(updated);
+    onSave && onSave(updated);
   };
 
   const openCreate = () => {

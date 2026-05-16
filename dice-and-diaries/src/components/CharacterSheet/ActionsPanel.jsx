@@ -1,6 +1,6 @@
 import React from "react";
 import ActionListPanel from "./ActionListPanel";
-import { fetchActions } from "../../mock/characterSheetMock";
+import { fetchActions } from "../../mock/db";
 
 const ActionsPanel = ({ characterId, onSave }) => (
   <ActionListPanel

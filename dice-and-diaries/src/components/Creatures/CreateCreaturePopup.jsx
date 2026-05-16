@@ -1,7 +1,7 @@
 // src/components/Creatures/CreateCreaturePopup.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createCreature, createFolder } from "../../mock/creaturesMock";
+import { createCreature, createFolder } from "../../mock/db";
 import "../../components/common/Popup.css";
 import "./CreateCreaturePopup.css";
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { fetchSpellcastingData } from "../../mock/characterSheetMock";
+import { fetchSpellcastingData } from "../../mock/db";
 import { getSpellcastingStats } from "../../utils/spellUtils";
 import SpellLevelGroup from "./SpellLevelGroup";
 import SpellFormPopup from "./SpellFormPopup";
@@ -29,19 +29,15 @@ const SpellsList = ({ character, onSave }) => {
   const maxLevel = Math.max(...Object.keys(spellSlots).map(Number), 0);
 
   const handleSpendSlot = (level) => {
-    setSpellSlots(prev => ({
-      ...prev,
-      [level]: { ...prev[level], current: Math.max(0, prev[level].current - 1) }
-    }));
-    onSave && onSave({ spellSlots });
+    const updated = { ...spellSlots, [level]: { ...spellSlots[level], current: Math.max(0, spellSlots[level].current - 1) } };
+    setSpellSlots(updated);
+    onSave && onSave({ spellSlots: updated });
   };
 
   const handleRecoverSlot = (level) => {
-    setSpellSlots(prev => ({
-      ...prev,
-      [level]: { ...prev[level], current: Math.min(prev[level].max, prev[level].current + 1) }
-    }));
-    onSave && onSave({ spellSlots });
+    const updated = { ...spellSlots, [level]: { ...spellSlots[level], current: Math.min(spellSlots[level].max, spellSlots[level].current + 1) } };
+    setSpellSlots(updated);
+    onSave && onSave({ spellSlots: updated });
   };
 
   const handleTogglePrepared = (spellId) => {

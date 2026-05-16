@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { fetchFeatures } from "../../mock/characterSheetMock";
+import { fetchFeatures } from "../../mock/db";
 import FeatureCard from "./FeatureCard";
 import FeatureFormPopup from "./FeatureFormPopup";
 import Button from "../common/Button";
@@ -49,17 +49,19 @@ const FeaturesList = ({ characterId }) => {
   };
 
   const handleSaveFeature = (featureData) => {
-    if (editingFeature) {
-      setFeatures(prev => prev.map(f => f.id === featureData.id ? featureData : f));
-    } else {
-      setFeatures(prev => [...prev, { ...featureData, id: Date.now() }]);
-    }
+    const updated = editingFeature
+      ? features.map(f => f.id === featureData.id ? featureData : f)
+      : [...features, { ...featureData, id: featureData.id || Date.now() }];
+    setFeatures(updated);
     setShowForm(false);
     setEditingFeature(null);
+    onSave && onSave(updated);
   };
 
   const handleDeleteFeature = (id) => {
-    setFeatures(prev => prev.filter(f => f.id !== id));
+    const updated = features.filter(f => f.id !== id);
+    setFeatures(updated);
+    onSave && onSave(updated);
   };
 
   const openCreateForm = () => {

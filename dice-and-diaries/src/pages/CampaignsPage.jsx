@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchCampaigns, getCurrentUserId } from "../mock/campaignsMock";
+import { fetchCampaigns, getCurrentUserId } from "../mock/db";
 import CampaignCard from "../components/Campaigns/CampaignCard";
 import "./CampaignsPage.css";
 

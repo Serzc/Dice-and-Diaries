@@ -1,7 +1,6 @@
 // src/pages/PlannerPage.jsx
 import React, { useEffect, useState } from "react";
-import { fetchCampaigns } from "../mock/campaignsMock";
-import { fetchPlanner, toggleSlot, computeOverlap, getWeekDays, TIME_SLOTS, DAY_LABELS } from "../mock/plannerMock";
+import { fetchCampaigns, fetchPlanner, toggleSlot, computeOverlap, getWeekDays, TIME_SLOTS, DAY_LABELS } from "../mock/db";
 import "./PlannerPage.css";
 
 const LEVEL_CLASSES = ["overlap-0", "overlap-1", "overlap-2", "overlap-3", "overlap-max"];

@@ -25,19 +25,19 @@ const ActionListPanel = ({ title, type, characterId, fetchData, onSave }) => {
   };
 
   const handleSaveItem = (item) => {
-    if (editingItem) {
-      setItems(prev => prev.map(i => i.id === item.id ? item : i));
-    } else {
-      setItems(prev => [...prev, item]);
-    }
+    const updated = editingItem
+      ? items.map(i => i.id === item.id ? item : i)
+      : [...items, { ...item, id: item.id || Date.now() }];
+    setItems(updated);
     setShowForm(false);
     setEditingItem(null);
-    // Notificar al padre para persistir
-    onSave && onSave(items);
+    onSave && onSave(updated);
   };
 
   const handleDelete = (id) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+    const updated = items.filter(i => i.id !== id);
+    setItems(updated);
+    onSave && onSave(updated);
   };
 
   const openCreate = () => {

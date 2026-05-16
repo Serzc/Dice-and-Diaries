@@ -1,7 +1,7 @@
 // src/components/Creatures/CreatureQuickView.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { fmtMod } from "../../mock/creaturesMock";
+import { fmtMod } from "../../mock/db";
 import "./CreatureQuickView.css";
 
 const ABILITY_ORDER = [
