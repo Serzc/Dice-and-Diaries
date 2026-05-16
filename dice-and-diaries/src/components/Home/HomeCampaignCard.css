@@ -1,49 +1,109 @@
 .home-campaign-card {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 1rem;
-  background-color: #ffffff;
-  border-left: 5px solid #8b5e3c;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  transition: box-shadow 0.2s;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  background-color: var(--color-gray-900);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .home-campaign-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.home-campaign-card:focus-visible {
+  outline: 3px solid var(--color-purple-400);
+  outline-offset: 2px;
+}
+
+/* Image area */
+.card-image-area {
+  position: relative;
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-gray-800);
+}
+
+/* Placeholder gradient when no image */
+.card-image-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-purple-800) 0%, var(--color-gray-900) 100%);
+}
+
+/* Gradient overlay for text legibility */
+.card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem 0.9rem 0.6rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
 }
 
 .campaign-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #2e2a24;
   margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-white);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Unread notification badge */
+.notification-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.3rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+/* Footer: last message + status dot */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.9rem;
+  background-color: rgba(255, 255, 255, 0.06);
+  gap: 0.5rem;
 }
 
 .last-message {
-  font-size: 0.9rem;
-  color: #5c5348;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
 }
 
-.status-badge {
-  align-self: flex-start;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: 12px;
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.status-badge.active {
-  background-color: #e0f2e2;
-  color: #2b5930;
+.status-dot.active {
+  background-color: #22c55e;
 }
 
-.status-badge.inactive {
-  background-color: #f0ece4;
-  color: #5c5348;
+.status-dot.inactive {
+  background-color: #ef4444;
 }

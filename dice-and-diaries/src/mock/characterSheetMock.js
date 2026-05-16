@@ -62,6 +62,17 @@ const rawCharacterData = {
     { ability: "str", level: "proficient" },
     { ability: "dex", level: "expert" },
   ],
+  save_proficiencies: ["dex", "int"], // Rogue: DEX e INT
+  skill_proficiencies: [
+    { skill: "acrobatics", level: "proficient" },
+    { skill: "stealth", level: "expert" },
+    { skill: "perception", level: "proficient" },
+    { skill: "survival", level: "proficient" },
+    { skill: "nature", level: "proficient" },
+    { skill: "investigation", level: "proficient" },
+    { skill: "sleight_of_hand", level: "expert" },
+    { skill: "athletics", level: "proficient" },
+  ],
   speed: 35,
   hp: { max: 38, current: 38, temp: 0 },
   hit_dice: { type: "d10", total: 5, remaining: 5 },

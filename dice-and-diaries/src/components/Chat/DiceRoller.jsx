@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Button from "../common/Button";
-import "./DiceRoller.css";
+import "../common/Popup.css";
+
+const DICE_OPTIONS = [4, 6, 8, 10, 12, 20, 100];
 
 const DiceRoller = ({ onRoll, onClose }) => {
   const [count, setCount] = useState(1);
@@ -10,66 +11,99 @@ const DiceRoller = ({ onRoll, onClose }) => {
   const [result, setResult] = useState(null);
 
   const roll = () => {
-    const results = [];
     const rollCount = advantage || disadvantage ? 2 : count;
-    for (let i = 0; i < rollCount; i++) {
-      results.push(Math.floor(Math.random() * sides) + 1);
-    }
-    let finalResults, total;
-    if (advantage) {
-      total = Math.max(...results);
-      finalResults = results;
-    } else if (disadvantage) {
-      total = Math.min(...results);
-      finalResults = results;
-    } else {
-      total = results.reduce((a, b) => a + b, 0);
-      finalResults = results;
-    }
-    setResult({ results: finalResults, total });
-    const notation = `${count}d${sides}`;
-    onRoll(notation, finalResults, total, advantage, disadvantage);
+    const results = Array.from({ length: rollCount }, () =>
+      Math.floor(Math.random() * sides) + 1
+    );
+    let total;
+    if (advantage) total = Math.max(...results);
+    else if (disadvantage) total = Math.min(...results);
+    else total = results.reduce((a, b) => a + b, 0);
+
+    setResult({ results, total });
+    onRoll(`${count}d${sides}`, results, total, advantage, disadvantage);
+  };
+
+  const toggleAdvantage = () => {
+    setAdvantage(a => !a);
+    setDisadvantage(false);
+  };
+
+  const toggleDisadvantage = () => {
+    setDisadvantage(d => !d);
+    setAdvantage(false);
   };
 
   return (
-    <div className="popup-overlay" role="dialog" aria-label="Tirada de dados">
-      <div className="popup-content">
-        <h3>Tirada de Dados</h3>
-        <div className="form-group">
-          <label htmlFor="dice-count">Número de dados</label>
-          <input id="dice-count" type="number" min="1" value={count} onChange={(e) => setCount(parseInt(e.target.value) || 1)} />
+    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Tirada de dados">
+      <div className="popup-content" onClick={e => e.stopPropagation()}>
+        <div className="popup-header">
+          <h3 className="popup-title">Tirada de Dados</h3>
+          <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
-        <div className="form-group">
-          <label htmlFor="dice-sides">Caras</label>
-          <select id="dice-sides" value={sides} onChange={(e) => setSides(parseInt(e.target.value))}>
-            <option value={4}>d4</option>
-            <option value={6}>d6</option>
-            <option value={8}>d8</option>
-            <option value={10}>d10</option>
-            <option value={12}>d12</option>
-            <option value={20}>d20</option>
-            <option value={100}>d100</option>
-          </select>
-        </div>
-        <div className="checkbox-group">
-          <label>
-            <input type="checkbox" checked={advantage} onChange={() => { setAdvantage(!advantage); if (!advantage) setDisadvantage(false); }} />
-            Ventaja
-          </label>
-          <label>
-            <input type="checkbox" checked={disadvantage} onChange={() => { setDisadvantage(!disadvantage); if (!disadvantage) setAdvantage(false); }} />
-            Desventaja
-          </label>
-        </div>
-        <div className="popup-actions">
-          <Button onClick={roll} ariaLabel="Lanzar dados">Lanzar</Button>
-          <Button onClick={onClose} ariaLabel="Cerrar">Cerrar</Button>
-        </div>
-        {result && (
-          <div className="roll-preview">
-            Resultado: [{result.results.join(", ")}] = {result.total}
+
+        <div className="popup-body">
+          {/* Dice type grid */}
+          <div className="dice-grid">
+            {DICE_OPTIONS.map(d => (
+              <button
+                key={d}
+                className={`dice-btn ${sides === d ? "dice-selected" : ""}`}
+                onClick={() => setSides(d)}
+                aria-pressed={sides === d}
+              >
+                d{d}
+              </button>
+            ))}
           </div>
-        )}
+
+          {/* Count */}
+          <div className="dice-count-row">
+            <label htmlFor="dice-count">Cantidad</label>
+            <input
+              id="dice-count"
+              type="number"
+              min="1"
+              max="20"
+              value={count}
+              onChange={e => setCount(Math.max(1, parseInt(e.target.value) || 1))}
+            />
+          </div>
+
+          {/* Advantage / disadvantage */}
+          <div className="adv-row">
+            <button
+              className={`adv-btn ${advantage ? "adv-active" : ""}`}
+              onClick={toggleAdvantage}
+              aria-pressed={advantage}
+            >
+              Ventaja
+            </button>
+            <button
+              className={`adv-btn ${disadvantage ? "disadv-active" : ""}`}
+              onClick={toggleDisadvantage}
+              aria-pressed={disadvantage}
+            >
+              Desventaja
+            </button>
+          </div>
+
+          {result && (
+            <div className="roll-preview" aria-live="polite">
+              [{result.results.join(", ")}] = <strong>{result.total}</strong>
+            </div>
+          )}
+        </div>
+
+        <div className="popup-footer">
+          <button
+            className="primary-button"
+            onClick={roll}
+            aria-label="Lanzar dados"
+          >
+            Lanzar {count}d{sides}
+          </button>
+        </div>
       </div>
     </div>
   );

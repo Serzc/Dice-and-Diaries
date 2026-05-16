@@ -8,12 +8,16 @@ const homeCampaigns = [
     name: "Campaña 1",
     lastMessage: "Último Mensaje",
     active: true,
+    imageUrl: null,
+    unreadCount: 0,
   },
   {
     id: 2,
     name: "Campaña 2",
-    lastMessage: "Este es un mensaje largo que...",
+    lastMessage: "Este es un mensaje largo que debería truncarse...",
     active: false,
+    imageUrl: null,
+    unreadCount: 1,
   },
 ];
 

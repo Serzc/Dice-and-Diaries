@@ -21,22 +21,27 @@ const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, onSendDiceRol
   return (
     <aside className="chat-sidebar" aria-label="Herramientas de chat">
       <div className="sidebar-buttons">
-        <Button onClick={() => setActivePopup("dice")} ariaLabel="Tirada de dados">
-          🎲 Dados
-        </Button>
-        <Button onClick={() => setActivePopup("character")} ariaLabel="Hoja de personaje">
-          📄 Personaje
-        </Button>
-        <Button onClick={() => setActivePopup("notes")} ariaLabel="Mis notas">
-          📝 Notas
-        </Button>
-        <Button onClick={() => setActivePopup("whisper")} ariaLabel="Enviar susurro">
-          🤫 Susurro
-        </Button>
+        <button className="sidebar-btn" onClick={() => setActivePopup("dice")} aria-label="Tirada de dados">
+          <span className="sidebar-btn-icon">d20</span>
+          <span className="sidebar-btn-label">Dados</span>
+        </button>
+        <button className="sidebar-btn" onClick={() => setActivePopup("character")} aria-label="Hoja de personaje">
+          <span className="sidebar-btn-icon">PC</span>
+          <span className="sidebar-btn-label">Personaje</span>
+        </button>
+        <button className="sidebar-btn" onClick={() => setActivePopup("notes")} aria-label="Mis notas">
+          <span className="sidebar-btn-icon">✎</span>
+          <span className="sidebar-btn-label">Notas</span>
+        </button>
+        <button className="sidebar-btn" onClick={() => setActivePopup("whisper")} aria-label="Enviar susurro">
+          <span className="sidebar-btn-icon">≫</span>
+          <span className="sidebar-btn-label">Susurro</span>
+        </button>
         {isGM && (
-          <Button onClick={() => setActivePopup("npcs")} ariaLabel="Ver NPCs">
-            👤 NPCs
-          </Button>
+          <button className="sidebar-btn" onClick={() => setActivePopup("npcs")} aria-label="Ver NPCs">
+            <span className="sidebar-btn-icon">NPC</span>
+            <span className="sidebar-btn-label">NPCs</span>
+          </button>
         )}
       </div>
 

@@ -6,7 +6,10 @@ const LoginPage = () => {
   return (
     <main className="login-page" aria-labelledby="login-heading">
       <div className="login-container">
-        <h1 id="login-heading">Bienvenido a<br />Dice and Diaries</h1>
+        <div className="login-brand">
+          <p className="login-welcome">Bienvenido a</p>
+          <h1 id="login-heading"><span className="brand-pill">Dice and Diaries</span></h1>
+        </div>
         <p className="login-subtitle">Iniciar sesión</p>
         <LoginForm />
       </div>

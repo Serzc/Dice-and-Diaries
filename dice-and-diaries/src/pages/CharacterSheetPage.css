@@ -2,16 +2,23 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem;
-  background-color: var(--color-background);
-  min-height: 100vh;
+  min-height: calc(100svh - 56px);
+}
+
+body:has(.character-sheet-page) {
+  background-color: var(--color-purple-900);
+}
+
+body:has(.character-sheet-page) #root {
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .page-title {
-  font-size: clamp(2rem, 2.2vw, 2.4rem);
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding-bottom: 0.5rem;
-  color: var(--color-text-primary);
+  color: var(--color-white);
   font-weight: 700;
 }
 

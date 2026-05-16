@@ -1,44 +1,434 @@
-/* Reutiliza o sobreescribe el estilo de modales. */
+/* ============================================
+   POPUP / MODAL SYSTEM — shared by all popups
+   ============================================ */
+
 .popup-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
 }
 
 .popup-content {
-  background-color: var(--color-surface);
-  padding: 2rem;
+  background: var(--color-white);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  max-width: 400px;
-  width: 90%;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: popup-enter 0.15s ease-out;
 }
 
-.popup-content h3 {
-  margin-top: 0;
+@keyframes popup-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- Header --- */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.popup-title {
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--color-text-primary);
+  margin: 0;
 }
 
-.campaign-list-popup {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
+.popup-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem 0.45rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
 }
 
-.campaign-list-popup li {
-  margin-bottom: 0.5rem;
+.popup-close-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-gray-100);
 }
 
+.popup-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* --- Body --- */
+.popup-body {
+  padding: 1.2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* --- Footer / Actions --- */
+.popup-footer,
 .popup-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 1.5rem;
   justify-content: flex-end;
+  padding: 0.85rem 1.2rem;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background: var(--color-gray-50);
+}
+
+/* Primary (save/confirm) button in footer */
+.popup-footer .primary-button,
+.popup-actions .primary-button {
+  padding: 0.45rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Last button in footer = cancel/secondary */
+.popup-footer .primary-button:last-child:not(:only-child),
+.popup-actions .primary-button:last-child:not(:only-child) {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: var(--color-gray-300);
+}
+
+.popup-footer .primary-button:last-child:not(:only-child):hover,
+.popup-actions .primary-button:last-child:not(:only-child):hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-400);
+  box-shadow: none;
+}
+
+/* --- Form groups --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.85rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label,
+.form-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* --- Form inputs --- */
+.popup-content input:not([type="checkbox"]):not([type="radio"]),
+.popup-content select,
+.popup-content textarea {
+  width: 100%;
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.popup-content input:not([type="checkbox"]):not([type="radio"]):focus,
+.popup-content select:focus,
+.popup-content textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-bg);
+}
+
+.popup-content input:not([type="checkbox"]):not([type="radio"]):hover:not(:focus),
+.popup-content select:hover:not(:focus),
+.popup-content textarea:hover:not(:focus) {
+  border-color: var(--color-gray-400);
+}
+
+.popup-content textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+.popup-content input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.popup-content input[type="number"]::-webkit-outer-spin-button,
+.popup-content input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+/* --- Two-column row --- */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+/* --- Checkbox / check group --- */
+.check-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* --- Uses inputs (current / max) --- */
+.uses-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.uses-inputs input {
+  width: 3.5rem !important;
+  text-align: center;
+}
+
+.uses-inputs span {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* --- Subsection (effect, etc.) --- */
+.effect-section {
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: 0.9rem;
+  margin-bottom: 0.85rem;
+  background: var(--color-gray-50);
+}
+
+.effect-section h4 {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.75rem 0;
+}
+
+.effect-toggle {
+  margin-bottom: 0.85rem;
+}
+
+/* --- Roll preview (DiceRoller) --- */
+.roll-preview {
+  margin-top: 0.85rem;
+  padding: 0.7rem 1rem;
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-purple-800);
+  text-align: center;
+  border: 1px solid rgba(124, 58, 237, 0.15);
+}
+
+/* --- Simple item list (NPCs, campaigns, characters) --- */
+.popup-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.popup-list li {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+}
+
+/* Campaign select buttons (impersonate, character notes) */
+.popup-select-btn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-gray-200);
+  padding: 0.55rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.popup-select-btn:hover {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Empty state */
+.popup-empty {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+/* Inline description paragraph */
+.popup-desc {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+/* Action form subcomponent (FeatureFormPopup) */
+.action-subform {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  padding: 0.8rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+}
+
+.action-subform h5 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.6rem 0;
+}
+
+/* Dice button grid (DiceRoller) */
+.dice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.dice-btn {
+  background: var(--color-gray-50);
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  text-align: center;
+}
+
+.dice-btn:hover {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dice-btn.dice-selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* Adv/disadv toggle row */
+.adv-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.adv-btn {
+  flex: 1;
+  background: var(--color-gray-50);
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  text-align: center;
+}
+
+.adv-btn.adv-active {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-white);
+}
+
+.adv-btn.disadv-active {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: var(--color-white);
+}
+
+/* Dice count input row */
+.dice-count-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.dice-count-row label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.dice-count-row input {
+  width: 3.5rem;
 }

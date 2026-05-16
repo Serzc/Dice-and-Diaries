@@ -1,45 +1,69 @@
-/* src/pages/Login.css */
+/* src/pages/LoginPage.css */
 .login-page {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
-  background-color: var(--color-secondary-bg); /* fondo café claro */
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  margin: 0;
+  background-color: var(--color-off-white);
+  padding: 3rem 2rem;
+  box-sizing: border-box;
 }
 
 .login-container {
-  background-color: var(--color-surface);
-  padding: 3rem 2.5rem;
+  background-color: var(--color-purple-900);
+  padding: 4rem 3.5rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  max-width: 400px;
-  width: 90%;
+  max-width: 680px;
+  width: 100%;
+}
+
+/* Brand block */
+.login-brand {
   text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.login-welcome {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 400;
+  margin: 0 0 0.5rem 0;
 }
 
 #login-heading {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  line-height: 1.3;
-  margin-bottom: 0.25rem;
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
-.login-subtitle {
-  font-size: 1.1rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-  margin-top: 0.5rem;
-  margin-bottom: 2rem;
+.brand-pill {
+  display: inline-block;
+  background-color: var(--color-purple-700);
+  color: var(--color-white);
+  padding: 0.4rem 1.6rem;
+  border-radius: 2rem;
+  font-size: 2rem;
+  font-weight: 700;
   letter-spacing: 0.3px;
 }
 
+/* Section heading */
+.login-subtitle {
+  font-size: 1.4rem;
+  color: var(--color-white);
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.2px;
+}
+
+/* Form */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.4rem;
 }
 
 .form-group {
@@ -49,38 +73,37 @@
 }
 
 .form-group label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  margin-bottom: 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 0.4rem;
 }
 
 .form-group input {
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  padding: 0.85rem 1.4rem;
+  border: none;
+  border-radius: 2rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
-  background-color: var(--color-surface);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: var(--color-white);
+  transition: box-shadow 0.2s;
 }
 
 .form-group input::placeholder {
   color: var(--color-text-muted);
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(179, 136, 214, 0.6);
 }
 
 .error-message {
   font-size: 0.8rem;
-  color: var(--color-error);
-  margin-top: 0.25rem;
+  color: #f9a3a3;
+  margin-top: 0.3rem;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -93,31 +116,33 @@
 }
 
 .alert-error {
-  background-color: var(--color-error-bg);
-  color: var(--color-error);
+  background-color: rgba(184, 44, 44, 0.25);
+  color: #f9a3a3;
   padding: 0.65rem 1rem;
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 500;
-  border: 1px solid #f1c1c1;
+  border: 1px solid rgba(249, 163, 163, 0.4);
 }
 
+/* Submit button */
 .primary-button {
-  background-color: var(--color-primary);
-  color: var(--color-text-on-primary);
-  padding: 0.8rem;
+  background-color: var(--color-purple-700);
+  color: var(--color-white);
+  padding: 0.85rem 1.8rem;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 2rem;
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.4px;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
   margin-top: 0.5rem;
+  align-self: flex-start;
 }
 
 .primary-button:hover {
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-purple-600);
 }
 
 .primary-button:active {
@@ -125,12 +150,13 @@
 }
 
 .primary-button:focus-visible {
-  outline: 3px solid var(--color-text-primary);
+  outline: 3px solid rgba(255, 255, 255, 0.7);
   outline-offset: 2px;
 }
 
 .primary-button:disabled {
-  background-color: var(--color-secondary-light);
+  background-color: var(--color-purple-800);
+  opacity: 0.7;
   cursor: not-allowed;
   transform: none;
 }

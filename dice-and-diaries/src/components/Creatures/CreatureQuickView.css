@@ -1,0 +1,129 @@
+/* src/components/Creatures/CreatureQuickView.css */
+
+.creature-quick-view {
+  padding: 0.9rem 1.1rem;
+}
+
+/* Fila stats HP / CA / CR */
+.quick-stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.quick-stat .label {
+  color: var(--color-text-muted);
+}
+
+.quick-stat .value {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Separador */
+.quick-divider {
+  border: none;
+  border-top: 1px solid var(--color-gray-200);
+  margin: 0.6rem 0;
+}
+
+/* Grid de características: 3 columnas × 2 filas */
+.ability-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.ability-cell {
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+}
+
+.ability-abbr {
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.ability-score {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+}
+
+.ability-mod {
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Sección Acciones */
+.quick-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  margin-bottom: 0.4rem;
+}
+
+.action-item {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.action-item strong {
+  color: var(--color-text-primary);
+}
+
+/* Footer */
+.quick-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.7rem;
+  gap: 0.5rem;
+}
+
+.btn-ver-hoja {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-ver-hoja:hover {
+  background: var(--color-primary-bg);
+}
+
+.btn-possess {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-possess:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-possess:active {
+  transform: translateY(1px);
+}

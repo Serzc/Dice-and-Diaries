@@ -1,34 +1,42 @@
 /* src/pages/CharactersPage.css */
 
 .characters-page {
-  max-width: 1000px;           /* un poco más ancho para varias tarjetas */
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
-  background-color: var(--color-background);
-  min-height: 100vh;
+  padding: 2rem 1.5rem 5rem;
+  min-height: calc(100svh - 56px);
   position: relative;
 }
 
+body:has(.characters-page) {
+  background-color: var(--color-gray-900);
+}
+
+body:has(.characters-page) #root {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
 .page-title {
-  font-size: 2rem;
+  font-size: 1.6rem;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding-bottom: 0.5rem;
-  color: var(--color-text-primary);
+  color: var(--color-white);
+  font-weight: 700;
 }
 
 .character-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1.5rem;
 }
 
 .empty-message {
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
   padding: 2rem;
-  background-color: var(--color-surface);
+  background-color: rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-md);
 }
 
@@ -37,12 +45,12 @@
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background-color: var(--color-primary);
   color: var(--color-text-on-primary);
-  font-size: 2rem;
+  font-size: 1.8rem;
   line-height: 1;
   border: none;
   box-shadow: var(--shadow-lg);
@@ -56,10 +64,10 @@
 
 .fab-create:hover {
   background-color: var(--color-primary-hover);
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 .fab-create:focus-visible {
-  outline: 3px solid var(--color-text-primary);
+  outline: 3px solid rgba(255, 255, 255, 0.7);
   outline-offset: 2px;
 }

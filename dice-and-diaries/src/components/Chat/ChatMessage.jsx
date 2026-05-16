@@ -45,21 +45,21 @@ const ChatMessage = ({ message, isOwnMessage }) => {
       role="listitem"
       aria-label={`Mensaje de ${senderDisplay}`}
     >
-      {message.characterAvatar && (
-        <img
-          src={message.characterAvatar}
-          alt={`Avatar de ${message.characterName}`}
-          className="avatar-small"
-        />
-      )}
       <div className="message-body">
-        <div className="message-header">
-          <span className="sender-name">{senderDisplay}</span>
-          <time className="message-time" dateTime={message.timestamp}>
-            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </time>
-        </div>
         {renderContent()}
+      </div>
+      <div className="message-sender-info">
+        {message.characterAvatar && (
+          <img
+            src={message.characterAvatar}
+            alt={`Avatar de ${message.characterName}`}
+            className="avatar-small"
+          />
+        )}
+        <span className="sender-name">{senderDisplay}</span>
+        <time className="message-time" dateTime={message.timestamp}>
+          {message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+        </time>
       </div>
     </div>
   );

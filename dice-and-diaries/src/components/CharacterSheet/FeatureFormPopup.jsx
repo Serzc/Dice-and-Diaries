@@ -1,19 +1,46 @@
 import React, { useState, useEffect } from "react";
-import Button from "../common/Button";
+import "../common/Popup.css";
 import "./FeatureFormPopup.css";
 
 const emptyEffect = {
   recharge: "",
   uses: { current: 0, max: 0 },
-  modifiers: {
-    ability_scores: {},
-    ability_proficiencies: [],
-    ac_bonus: 0,
-    initiative_bonus: 0,
-  },
+  modifiers: { ac_bonus: 0, initiative_bonus: 0 },
   action: null,
   bonus_action: null,
   reaction: null,
+};
+
+const ActionSubform = ({ type, data, onChange }) => {
+  const label = type === "action" ? "Acción" : type === "bonus_action" ? "Acción de bonus" : "Reacción";
+  return (
+    <div className="action-subform">
+      <h5>{label}</h5>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Daño (ej. 2d6)</label>
+          <input
+            value={data.attack?.damage || ""}
+            onChange={e => onChange({ ...data, attack: { ...data.attack, damage: e.target.value } })}
+          />
+        </div>
+        <div className="form-group">
+          <label>Tipo de daño</label>
+          <input
+            value={data.attack?.type || ""}
+            onChange={e => onChange({ ...data, attack: { ...data.attack, type: e.target.value } })}
+          />
+        </div>
+      </div>
+      <div className="form-group">
+        <label>Curación (ej. 1d8+2)</label>
+        <input
+          value={data.heal || ""}
+          onChange={e => onChange({ ...data, heal: e.target.value })}
+        />
+      </div>
+    </div>
+  );
 };
 
 const FeatureFormPopup = ({ feature, onSave, onClose }) => {
@@ -21,109 +48,140 @@ const FeatureFormPopup = ({ feature, onSave, onClose }) => {
   const [description, setDescription] = useState(feature?.description || "");
   const [effect, setEffect] = useState(feature?.effect || emptyEffect);
 
-  const handleAddAction = (type) => {
-    const actionTemplate = {
-      attack: { damage: "", type: "", range: "" },
-      heal: "",
-      recharge: "",
-      uses: { current: 0, max: 0 },
-    };
-    setEffect(prev => ({ ...prev, [type]: actionTemplate }));
+  useEffect(() => {
+    setName(feature?.name || "");
+    setDescription(feature?.description || "");
+    setEffect(feature?.effect || emptyEffect);
+  }, [feature]);
+
+  const addActionType = (type) => {
+    setEffect(prev => ({
+      ...prev,
+      [type]: { attack: { damage: "", type: "", range: "" }, heal: "" },
+    }));
   };
 
   const handleSave = () => {
-    const newFeature = {
-      id: feature?.id || Date.now(),
-      name,
-      description,
-      effect,
-    };
-    onSave(newFeature);
+    if (!name.trim()) return;
+    onSave({ id: feature?.id || Date.now(), name, description, effect });
   };
 
-  // Renderizado simplificado de campos de efecto
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de Feature">
+    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de habilidad">
       <div className="popup-content feature-popup" onClick={e => e.stopPropagation()}>
-        <h3>{feature ? "Editar Feature" : "Nueva Feature"}</h3>
-        <div className="form-group">
-          <label>Nombre</label>
-          <input value={name} onChange={e => setName(e.target.value)} />
+        <div className="popup-header">
+          <h3 className="popup-title">{feature ? "Editar Habilidad" : "Nueva Habilidad"}</h3>
+          <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
-        <div className="form-group">
-          <label>Descripción</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} />
-        </div>
-        <div className="effect-section">
-          <h4>Efecto</h4>
-          {/* Opciones de recarga */}
-          <div className="form-row">
-            <label>Recarga</label>
-            <select value={effect.recharge || ""} onChange={e => setEffect(prev => ({ ...prev, recharge: e.target.value }))}>
-              <option value="">Ninguna</option>
-              <option value="PerTurn">Por Turno</option>
-              <option value="SR">Descanso Corto</option>
-              <option value="LR">Descanso Largo</option>
-            </select>
-          </div>
-          {/* Usos */}
-          <div className="form-row">
-            <label>Usos</label>
-            <div className="uses-inputs">
-              <input type="number" min="0" placeholder="Actual" value={effect.uses?.current || 0}
-                onChange={e => setEffect(prev => ({ ...prev, uses: { ...prev.uses, current: parseInt(e.target.value) || 0 } }))} />
-              <input type="number" min="0" placeholder="Máx" value={effect.uses?.max || 0}
-                onChange={e => setEffect(prev => ({ ...prev, uses: { ...prev.uses, max: parseInt(e.target.value) || 0 } }))} />
-            </div>
-          </div>
-          {/* Modificadores */}
+
+        <div className="popup-body">
           <div className="form-group">
-            <label>Bonificador CA</label>
-            <input type="number" value={effect.modifiers?.ac_bonus || 0}
-              onChange={e => setEffect(prev => ({ ...prev, modifiers: { ...prev.modifiers, ac_bonus: parseInt(e.target.value) || 0 } }))} />
+            <label htmlFor="feat-name">Nombre</label>
+            <input
+              id="feat-name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Nombre de la habilidad..."
+            />
           </div>
-          {/* Acciones, Bonus Actions, Reacciones */}
-          <div className="form-row">
-            <label>Agregar</label>
-            <Button onClick={() => handleAddAction("action")}>Acción</Button>
-            <Button onClick={() => handleAddAction("bonus_action")}>Bonus Action</Button>
-            <Button onClick={() => handleAddAction("reaction")}>Reacción</Button>
+          <div className="form-group">
+            <label htmlFor="feat-desc">Descripción</label>
+            <textarea
+              id="feat-desc"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              rows={3}
+              placeholder="Describe la habilidad..."
+            />
           </div>
-          {effect.action && <ActionForm type="action" data={effect.action} onChange={(data) => setEffect(prev => ({ ...prev, action: data }))} />}
-          {effect.bonus_action && <ActionForm type="bonus_action" data={effect.bonus_action} onChange={(data) => setEffect(prev => ({ ...prev, bonus_action: data }))} />}
-          {effect.reaction && <ActionForm type="reaction" data={effect.reaction} onChange={(data) => setEffect(prev => ({ ...prev, reaction: data }))} />}
-        </div>
-        <div className="popup-actions">
-          <Button onClick={handleSave} ariaLabel="Guardar feature">Guardar</Button>
-          <Button onClick={onClose} ariaLabel="Cancelar">Cancelar</Button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-// Subcomponente para configurar una acción individual
-const ActionForm = ({ type, data, onChange }) => {
-  const handleChange = (field, value) => {
-    onChange({ ...data, [field]: value });
-  };
+          <div className="effect-section">
+            <h4>Efecto</h4>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="feat-recharge">Recarga</label>
+                <select
+                  id="feat-recharge"
+                  value={effect.recharge || ""}
+                  onChange={e => setEffect(prev => ({ ...prev, recharge: e.target.value }))}
+                >
+                  <option value="">Ninguna</option>
+                  <option value="PerTurn">Por Turno</option>
+                  <option value="SR">Descanso Corto</option>
+                  <option value="LR">Descanso Largo</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Usos (actual / máx.)</label>
+                <div className="uses-inputs">
+                  <input
+                    type="number" min="0"
+                    value={effect.uses?.current || 0}
+                    onChange={e => setEffect(prev => ({ ...prev, uses: { ...prev.uses, current: parseInt(e.target.value) || 0 } }))}
+                    aria-label="Usos actuales"
+                  />
+                  <span>/</span>
+                  <input
+                    type="number" min="0"
+                    value={effect.uses?.max || 0}
+                    onChange={e => setEffect(prev => ({ ...prev, uses: { ...prev.uses, max: parseInt(e.target.value) || 0 } }))}
+                    aria-label="Usos máximos"
+                  />
+                </div>
+              </div>
+            </div>
 
-  return (
-    <div className="action-form">
-      <h5>{type === "action" ? "Acción" : type === "bonus_action" ? "Bonus Action" : "Reacción"}</h5>
-      <div className="form-group">
-        <label>Daño (ej. 2d6)</label>
-        <input value={data.attack?.damage || ""} onChange={e => handleChange("attack", { ...data.attack, damage: e.target.value })} />
+            <div className="form-group">
+              <label htmlFor="feat-ac">Bonificador CA</label>
+              <input
+                id="feat-ac"
+                type="number"
+                value={effect.modifiers?.ac_bonus || 0}
+                onChange={e => setEffect(prev => ({ ...prev, modifiers: { ...prev.modifiers, ac_bonus: parseInt(e.target.value) || 0 } }))}
+              />
+            </div>
+
+            {/* Add action/bonus/reaction */}
+            <div className="feat-action-buttons">
+              {!effect.action && (
+                <button className="popup-select-btn feat-add-btn" onClick={() => addActionType("action")}>
+                  + Acción
+                </button>
+              )}
+              {!effect.bonus_action && (
+                <button className="popup-select-btn feat-add-btn" onClick={() => addActionType("bonus_action")}>
+                  + Bonus
+                </button>
+              )}
+              {!effect.reaction && (
+                <button className="popup-select-btn feat-add-btn" onClick={() => addActionType("reaction")}>
+                  + Reacción
+                </button>
+              )}
+            </div>
+
+            {effect.action && (
+              <ActionSubform type="action" data={effect.action}
+                onChange={data => setEffect(prev => ({ ...prev, action: data }))} />
+            )}
+            {effect.bonus_action && (
+              <ActionSubform type="bonus_action" data={effect.bonus_action}
+                onChange={data => setEffect(prev => ({ ...prev, bonus_action: data }))} />
+            )}
+            {effect.reaction && (
+              <ActionSubform type="reaction" data={effect.reaction}
+                onChange={data => setEffect(prev => ({ ...prev, reaction: data }))} />
+            )}
+          </div>
+        </div>
+
+        <div className="popup-footer">
+          <button className="primary-button" onClick={handleSave} disabled={!name.trim()}>
+            Guardar
+          </button>
+          <button className="primary-button" onClick={onClose}>Cancelar</button>
+        </div>
       </div>
-      <div className="form-group">
-        <label>Tipo de daño</label>
-        <input value={data.attack?.type || ""} onChange={e => handleChange("attack", { ...data.attack, type: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <label>Curación (ej. 1d8+2)</label>
-        <input value={data.heal || ""} onChange={e => handleChange("heal", e.target.value)} />
-      </div>
-      {/* se podría agregar más configuración */}
     </div>
   );
 };

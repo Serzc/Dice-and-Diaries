@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check src/utils/characterDataAdapter.js)",
+      "Bash(node --check src/components/CharacterSheet/AbilityScoresSection.jsx)",
+      "Bash(node --check src/components/CharacterSheet/AbilityProficienciesSection.jsx)"
+    ]
+  }
+}

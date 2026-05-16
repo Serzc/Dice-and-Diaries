@@ -1,12 +1,3 @@
 .action-popup {
-  min-width: 350px;
-}
-
-.uses-inputs {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-.uses-inputs input {
-  width: 60px;
+  max-width: 460px;
 }

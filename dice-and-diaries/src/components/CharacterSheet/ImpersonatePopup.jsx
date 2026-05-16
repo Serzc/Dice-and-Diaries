@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../common/Button";
 import { fetchCharacterCampaigns } from "../../mock/characterSheetMock";
+import "../common/Popup.css";
 import "./ImpersonatePopup.css";
 
 const ImpersonatePopup = ({ characterId, characterName, onClose }) => {
@@ -13,27 +13,37 @@ const ImpersonatePopup = ({ characterId, characterName, onClose }) => {
   }, [characterId]);
 
   const handleSelect = (campaignId) => {
-    // Redirige al chat de la campaña con el parámetro characterId para impersonar
     navigate(`/campaigns/${campaignId}/chat?characterId=${characterId}&characterName=${encodeURIComponent(characterName)}`);
   };
 
   return (
     <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Impersonar personaje">
       <div className="popup-content impersonate-popup" onClick={e => e.stopPropagation()}>
-        <h3>Impersonar a {characterName}</h3>
-        <p>Selecciona una campaña para hablar como este personaje:</p>
-        <ul className="campaign-list">
-          {campaigns.map(camp => (
-            <li key={camp.id}>
-              <Button onClick={() => handleSelect(camp.id)}>
-                {camp.name}
-              </Button>
-            </li>
-          ))}
-          {campaigns.length === 0 && <li>No estás en ninguna campaña con este personaje.</li>}
-        </ul>
-        <div className="popup-actions">
-          <Button onClick={onClose} ariaLabel="Cerrar">Cerrar</Button>
+        <div className="popup-header">
+          <h3 className="popup-title">Impersonar a {characterName}</h3>
+          <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
+        </div>
+
+        <div className="popup-body">
+          <p className="popup-desc">
+            Selecciona una campaña para hablar como este personaje en el chat:
+          </p>
+          <div className="popup-list" role="list">
+            {campaigns.map(camp => (
+              <li key={camp.id} role="listitem" style={{ listStyle: "none", padding: 0 }}>
+                <button className="popup-select-btn" onClick={() => handleSelect(camp.id)}>
+                  {camp.name}
+                </button>
+              </li>
+            ))}
+            {campaigns.length === 0 && (
+              <p className="popup-empty">No estás en ninguna campaña con este personaje.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="popup-footer">
+          <button className="primary-button" onClick={onClose}>Cerrar</button>
         </div>
       </div>
     </div>

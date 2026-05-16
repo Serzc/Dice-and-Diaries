@@ -1,0 +1,611 @@
+/* src/pages/CreatureSheetPage.css */
+
+/* Fondo oscuro púrpura (como CharacterSheetPage) */
+body:has(.creature-sheet-page) {
+  background-color: var(--color-purple-900);
+}
+
+body:has(.creature-sheet-page) #root {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Contenedor principal */
+.creature-sheet-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+  min-height: calc(100svh - 56px);
+  position: relative;
+}
+
+/* Estados de carga y error */
+.cs-loading,
+.cs-error {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  padding: 3rem;
+  font-size: 1rem;
+}
+
+/* Botón de volver */
+.cs-back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--color-white);
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.cs-back-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.cs-back-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Cabecera de la página */
+.creature-sheet-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.csh-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.csh-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Título */
+.page-title.cs-page-title {
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
+  color: var(--color-white);
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Badge de tipo */
+.cs-type-badge {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+/* Botones de cabecera */
+.cs-btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.cs-btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.cs-btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.cs-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cs-btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-white);
+}
+
+.cs-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.cs-btn-possess {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+  padding: 0.4rem 1.1rem;
+}
+
+.cs-btn-possess:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* Tabs */
+.creature-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 0.3rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0;
+}
+
+.creature-tab-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem 0.6rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.creature-tab-btn:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.creature-tab-btn.active {
+  color: var(--color-white);
+  border-bottom-color: var(--color-primary);
+}
+
+.creature-tab-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Contenedor del tab activo */
+.creature-tab-content {
+  animation: tab-enter 0.15s ease-out;
+}
+
+@keyframes tab-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== Stat Block ==================== */
+.stat-block {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
+}
+
+/* Cabecera del bloque stat */
+.stat-block-header {
+  margin-bottom: 0.5rem;
+}
+
+.sb-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 0.2rem;
+}
+
+.sb-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0 0 0.3rem;
+}
+
+.sb-cr-badge {
+  display: inline-block;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin: 0;
+}
+
+/* Divisor */
+.sb-divider {
+  border: none;
+  border-top: 2px solid var(--color-primary);
+  margin: 0.8rem 0;
+  opacity: 0.35;
+}
+
+/* Secciones dentro del stat block */
+.stat-block-section {
+  margin-bottom: 0.3rem;
+}
+
+.sb-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  margin: 0 0 0.5rem;
+}
+
+/* Defensas */
+.sb-defenses-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.sb-defense-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.sb-label {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.sb-value {
+  color: var(--color-text-secondary);
+}
+
+.sb-note {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.sb-hp-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sb-slash {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+/* Input de edición */
+.sb-input {
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.88rem;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  width: 5rem;
+  transition: border-color 0.15s;
+}
+
+.sb-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-bg);
+}
+
+.sb-input-sm {
+  width: 3.5rem;
+  text-align: center;
+}
+
+/* Grid de características */
+.sb-abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.4rem;
+}
+
+.sb-ability-cell {
+  text-align: center;
+  padding: 0.3rem 0.1rem;
+  border: 1px solid var(--color-gray-100);
+  border-radius: var(--radius-sm);
+  background: var(--color-gray-50);
+}
+
+.sb-ability-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.sb-ability-score {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.sb-ability-mod {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Competencias */
+.sb-proficiency-row {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 0.3rem;
+  line-height: 1.4;
+}
+
+.sb-proficiency-row strong {
+  color: var(--color-text-primary);
+}
+
+/* Rasgos y acciones */
+.sb-trait-item {
+  margin-bottom: 0.5rem;
+}
+
+.sb-trait-text {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sb-trait-text strong {
+  color: var(--color-text-primary);
+}
+
+/* Notas */
+.sb-notes-block {
+  margin-bottom: 1rem;
+}
+
+.sb-notes-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+}
+
+.sb-notes-textarea {
+  width: 100%;
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.sb-notes-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-bg);
+}
+
+.sb-notes-textarea[readonly] {
+  background: var(--color-gray-50);
+  color: var(--color-text-secondary);
+  cursor: default;
+}
+
+/* ==================== Edit mode ==================== */
+
+/* Rows in stat-block header edit mode */
+.sb-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.sb-input-name {
+  flex: 1;
+  font-size: 1.05rem;
+  font-weight: 700;
+  min-width: 0;
+}
+
+/* Native select styled to match inputs */
+.sb-select {
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.88rem;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.sb-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-bg);
+}
+
+/* Inline label + small input pair */
+.sb-edit-field {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+/* Stacked inputs inside a defense item (e.g., CA value + acNote) */
+.sb-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* Ability score number input inside the grid */
+.sb-ability-input {
+  width: 100%;
+  text-align: center;
+  padding: 0.2rem 0.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Proficiency list editor */
+.sb-edit-list-section {
+  margin-bottom: 0.75rem;
+}
+
+.sb-list-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.3rem;
+}
+
+.sb-list-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Block of individual field rows (immunities, senses, languages) */
+.sb-edit-fields-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.sb-edit-field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sb-edit-field-row .sb-list-label {
+  flex-shrink: 0;
+  margin-bottom: 0;
+  min-width: 9rem;
+}
+
+.sb-edit-field-row .sb-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Remove button (×) next to list items */
+.sb-remove-btn {
+  background: none;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sb-remove-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* "+ Añadir" button at the bottom of a list */
+.sb-add-btn {
+  background: none;
+  border: 1.5px dashed var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.28rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 0.15rem;
+}
+
+.sb-add-btn:hover {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+}
+
+/* Trait edit card */
+.sb-trait-edit-item {
+  margin-bottom: 0.65rem;
+  padding: 0.5rem 0.6rem;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-gray-200);
+}
+
+.sb-trait-edit-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.sb-trait-name-input {
+  flex: 1;
+  font-weight: 700;
+}
+
+.sb-trait-desc-textarea {
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  .sb-abilities-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .creature-sheet-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .csh-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

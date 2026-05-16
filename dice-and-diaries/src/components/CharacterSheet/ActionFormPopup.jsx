@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Button from "../common/Button";
+import "../common/Popup.css";
 import "./ActionFormPopup.css";
 
 const defaultAction = {
@@ -28,55 +28,77 @@ const ActionFormPopup = ({ action, onSave, onClose }) => {
   };
 
   const handleSave = () => {
-    // Validación simple
     if (!form.name.trim()) return;
-    onSave({
-      ...form,
-      id: form.id || Date.now(),
-    });
+    onSave({ ...form, id: form.id || Date.now() });
   };
 
   return (
     <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de acción">
       <div className="popup-content action-popup" onClick={e => e.stopPropagation()}>
-        <h3>{action ? "Editar acción" : "Nueva acción"}</h3>
-        <div className="form-group">
-          <label>Nombre</label>
-          <input value={form.name} onChange={e => handleChange("name", e.target.value)} />
+        <div className="popup-header">
+          <h3 className="popup-title">{action ? "Editar Acción" : "Nueva Acción"}</h3>
+          <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
-        <div className="form-group">
-          <label>Descripción</label>
-          <textarea value={form.description} onChange={e => handleChange("description", e.target.value)} rows={3} />
-        </div>
-        <div className="form-row">
+
+        <div className="popup-body">
           <div className="form-group">
-            <label>Recarga</label>
-            <select value={form.recharge} onChange={e => handleChange("recharge", e.target.value)}>
-              <option value="PerTurn">Por turno</option>
-              <option value="SR">Descanso corto</option>
-              <option value="LR">Descanso largo</option>
-            </select>
+            <label htmlFor="action-name">Nombre</label>
+            <input
+              id="action-name"
+              value={form.name}
+              onChange={e => handleChange("name", e.target.value)}
+              placeholder="Nombre de la acción..."
+            />
           </div>
           <div className="form-group">
-            <label>Usos</label>
-            <div className="uses-inputs">
-              <input
-                type="number" min="0" placeholder="Actual"
-                value={form.uses.current}
-                onChange={e => handleUsesChange("current", e.target.value)}
-              />
-              <span>/</span>
-              <input
-                type="number" min="0" placeholder="Máx"
-                value={form.uses.max}
-                onChange={e => handleUsesChange("max", e.target.value)}
-              />
+            <label htmlFor="action-desc">Descripción</label>
+            <textarea
+              id="action-desc"
+              value={form.description}
+              onChange={e => handleChange("description", e.target.value)}
+              rows={3}
+              placeholder="Describe el efecto..."
+            />
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="action-recharge">Recarga</label>
+              <select
+                id="action-recharge"
+                value={form.recharge}
+                onChange={e => handleChange("recharge", e.target.value)}
+              >
+                <option value="PerTurn">Por turno</option>
+                <option value="SR">Descanso corto</option>
+                <option value="LR">Descanso largo</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Usos (actual / máx.)</label>
+              <div className="uses-inputs">
+                <input
+                  type="number" min="0"
+                  value={form.uses.current}
+                  onChange={e => handleUsesChange("current", e.target.value)}
+                  aria-label="Usos actuales"
+                />
+                <span>/</span>
+                <input
+                  type="number" min="0"
+                  value={form.uses.max}
+                  onChange={e => handleUsesChange("max", e.target.value)}
+                  aria-label="Usos máximos"
+                />
+              </div>
             </div>
           </div>
         </div>
-        <div className="popup-actions">
-          <Button onClick={handleSave} ariaLabel="Guardar acción">Guardar</Button>
-          <Button onClick={onClose} ariaLabel="Cancelar">Cancelar</Button>
+
+        <div className="popup-footer">
+          <button className="primary-button" onClick={handleSave} disabled={!form.name.trim()}>
+            Guardar
+          </button>
+          <button className="primary-button" onClick={onClose}>Cancelar</button>
         </div>
       </div>
     </div>

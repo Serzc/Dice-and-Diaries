@@ -70,14 +70,19 @@ const CharacterSheetPage = () => {
           <AbilityScoresSection
             scores={character.abilityScores}
             modifiers={character.abilityModifiers}
+            savingThrows={character.savingThrows}
+            saveProficiencies={character.saveProficiencies}
+            proficiencyBonus={character.proficiencyBonus}
             onSave={(data) => updateCharacter(data)}
           />
         </div>
 
-        {/* Fila 2, Col 2: Ability Proficiencies */}
+        {/* Fila 2, Col 2: Skill Proficiencies */}
         <div className="sheet-area area-proficiencies">
           <AbilityProficienciesSection
-            proficiencies={character.abilityProficiencies}
+            skills={character.skillProficiencies}
+            proficiencyBonus={character.proficiencyBonus}
+            onSave={(data) => updateCharacter({ skillProficiencies: data })}
           />
         </div>
 

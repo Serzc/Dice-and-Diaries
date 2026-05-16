@@ -46,6 +46,15 @@ const CampaignsPage = () => {
           ))}
         </div>
       )}
+
+      <button
+        className="fab-create-campaign"
+        aria-label="Crear nueva campaña"
+        title="Crear campaña"
+        onClick={() => alert("Crear campaña")}
+      >
+        +
+      </button>
     </main>
   );
 };

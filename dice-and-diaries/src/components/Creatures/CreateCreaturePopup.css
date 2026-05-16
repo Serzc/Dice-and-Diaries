@@ -1,0 +1,49 @@
+/* src/components/Creatures/CreateCreaturePopup.css */
+
+.cc-choose-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Ability scores grid in the creation form */
+.cc-abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+
+.cc-ability-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.cc-ability-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.cc-ability-input {
+  width: 100% !important;
+  text-align: center !important;
+  padding: 0.3rem 0.1rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+
+.cc-ability-mod {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+@media (max-width: 480px) {
+  .cc-abilities-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -10,8 +10,9 @@ import CampaignsPage from "./pages/CampaignsPage";
 import CharactersPage from "./pages/CharactersPage";
 import CharacterSheetPage from "./pages/CharacterSheetPage";
 import ChatPage from "./pages/ChatPage";
+import CreaturesPage from "./pages/CreaturesPage";
+import CreatureSheetPage from "./pages/CreatureSheetPage";
 //import PlanSessionPage from "./pages/PlanSessionPage";
-//import MyCreaturesPage from "./pages/MyCreaturesPage";
 
 import "./App.css";
 
@@ -28,9 +29,11 @@ function AppContent() {
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/campaigns/:campaignId/chat" element={<ChatPage />} />
         <Route path="/characters" element={<CharactersPage />} />
-        <Route path="/characters/:id" element={<CharacterSheetPage />} /> 
+        <Route path="/characters/:id" element={<CharacterSheetPage />} />
+        <Route path="/creatures" element={<CreaturesPage />} />
+        <Route path="/creatures/folder/:folderId" element={<CreaturesPage />} />
+        <Route path="/creatures/:creatureId" element={<CreatureSheetPage />} />
         {/* <Route path="/plan-session" element={<PlanSessionPage />} /> */}
-        {/* <Route path="/creatures" element={<MyCreaturesPage />} /> */}
       </Routes>
     </>
   );

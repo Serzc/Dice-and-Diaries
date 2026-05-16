@@ -1,29 +1,16 @@
 .feature-popup {
-  min-width: 400px;
+  max-width: 520px;
 }
 
-.effect-section {
-  border: 1px solid var(--color-border);
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  margin: 1rem 0;
-}
-
-.form-row {
+.feat-action-buttons {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.8rem;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 }
 
-.uses-inputs {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.action-form {
-  background: var(--color-background);
-  padding: 0.8rem;
-  border-radius: var(--radius-sm);
-  margin-top: 0.5rem;
+.feat-add-btn {
+  padding: 0.3rem 0.75rem !important;
+  font-size: 0.78rem !important;
+  width: auto !important;
 }

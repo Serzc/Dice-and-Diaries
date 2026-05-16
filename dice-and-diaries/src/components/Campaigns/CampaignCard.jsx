@@ -1,49 +1,73 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
-import Button from "../common/Button";
 import "./CampaignCard.css";
 
 const CampaignCard = ({ campaign, isGM }) => {
   const navigate = useNavigate();
 
-  const handleNavigate = (path) => {
-    navigate(path);
-  };
-
   return (
-    <Card className="campaign-card" role="listitem" aria-labelledby={`campaign-${campaign.id}-name`}>
+    <Card className={`campaign-card ${isGM ? "campaign-card--gm" : ""}`} role="listitem" aria-labelledby={`campaign-${campaign.id}-name`}>
+      {/* Name + GM badge */}
       <div className="campaign-info">
         <h2 id={`campaign-${campaign.id}-name`} className="campaign-name">
           {campaign.name}
         </h2>
-        <div className="campaign-meta">
-          {isGM && <span className="badge gm-badge">GM</span>}
-          <span className={`badge status-badge ${campaign.active ? "active" : "inactive"}`}>
-            {campaign.active ? "Activa" : "Inactiva"}
-          </span>
-        </div>
+        {isGM && <span className="gm-badge" aria-label="Game Master">GM</span>}
       </div>
 
-      <div className="campaign-actions" role="group" aria-label="Acciones de campaña">
-        <Button onClick={() => handleNavigate(`/campaigns/${campaign.id}/notes`)} ariaLabel={`Notas de ${campaign.name}`}>
-          Notas
-        </Button>
-        <Button onClick={() => handleNavigate(`/campaigns/${campaign.id}/chat`)} ariaLabel={`Chat de ${campaign.name}`}>
-          Chat
-        </Button>
-        {isGM && (
-          <>
-            <Button onClick={() => handleNavigate(`/campaigns/${campaign.id}/npcs`)} ariaLabel={`NPCs de ${campaign.name}`}>
-              NPCs
-            </Button>
-            <Button onClick={() => handleNavigate(`/campaigns/${campaign.id}/players`)} ariaLabel={`Gestionar jugadores de ${campaign.name}`}>
-              Jugadores
-            </Button>
-            <Button onClick={() => handleNavigate(`/campaigns/${campaign.id}/start`)} ariaLabel={`Iniciar sesión de ${campaign.name}`}>
-              Iniciar sesión
-            </Button>
-          </>
+      {/* Right side: nav buttons + primary action */}
+      <div className="campaign-right">
+        {/* Nav buttons */}
+        <div className="campaign-nav-buttons" role="group" aria-label="Acciones de campaña">
+          <button
+            className="campaign-nav-btn"
+            onClick={() => navigate(`/campaigns/${campaign.id}/notes`)}
+            aria-label={`Notas de ${campaign.name}`}
+          >
+            Notas
+          </button>
+          <button
+            className="campaign-nav-btn"
+            onClick={() => navigate(`/campaigns/${campaign.id}/chat`)}
+            aria-label={`Chat de ${campaign.name}`}
+          >
+            Chat
+          </button>
+          {isGM && (
+            <>
+              <button
+                className="campaign-nav-btn"
+                onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
+                aria-label={`NPCs de ${campaign.name}`}
+              >
+                NPCs
+              </button>
+              <button
+                className="campaign-nav-btn"
+                onClick={() => navigate(`/campaigns/${campaign.id}/players`)}
+                aria-label={`Gestionar jugadores de ${campaign.name}`}
+              >
+                Jugadores
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Primary action: GM gets start-session, player gets status */}
+        {isGM ? (
+          <button
+            className="btn-start-session"
+            onClick={() => navigate(`/campaigns/${campaign.id}/start`)}
+            aria-label={`Iniciar sesión de ${campaign.name}`}
+          >
+            Empezar Sesión
+          </button>
+        ) : (
+          <span className="session-status">
+            <span className={`status-dot ${campaign.active ? "active" : "inactive"}`} aria-hidden="true" />
+            {campaign.active ? "Sesión Activa" : "Sesión Inactiva"}
+          </span>
         )}
       </div>
     </Card>

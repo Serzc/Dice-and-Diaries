@@ -2,19 +2,25 @@ import React, { useState } from "react";
 import Button from "../common/Button";
 import "./AbilityScoresSection.css";
 
-const abilityAbbr = ["str", "dex", "con", "int", "wis", "cha"];
-const abilityNames = {
-  str: "Strength", dex: "Dexterity", con: "Constitution",
-  int: "Intelligence", wis: "Wisdom", cha: "Charisma",
+const ABILITIES = ["str", "dex", "con", "int", "wis", "cha"];
+
+const ABILITY_NAMES = {
+  str: "Fuerza",
+  dex: "Destreza",
+  con: "Constitución",
+  int: "Inteligencia",
+  wis: "Sabiduría",
+  cha: "Carisma",
 };
 
-const AbilityScoresSection = ({ scores, modifiers, onSave }) => {
+const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
+
+const AbilityScoresSection = ({ scores, modifiers, savingThrows, saveProficiencies = [], proficiencyBonus, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedScores, setEditedScores] = useState({ ...scores });
 
   const handleEditToggle = () => {
     if (isEditing) {
-      // Guardar cambios
       onSave({ abilityScores: editedScores });
       setIsEditing(false);
     } else {
@@ -24,38 +30,72 @@ const AbilityScoresSection = ({ scores, modifiers, onSave }) => {
   };
 
   const handleScoreChange = (ability, value) => {
-    setEditedScores(prev => ({
-      ...prev,
-      [ability]: parseInt(value) || 0,
-    }));
+    setEditedScores(prev => ({ ...prev, [ability]: parseInt(value) || 0 }));
   };
 
   return (
     <section className="sheet-section ability-scores-section" aria-labelledby="ability-scores-heading">
-      <h3 id="ability-scores-heading">Ability Scores</h3>
-      <div className="ability-scores-list">
-        {abilityAbbr.map(ab => (
-          <div key={ab} className="ability-item">
-            <span className="ability-name" aria-label={abilityNames[ab]}>{ab.toUpperCase()}</span>
-            {isEditing ? (
-              <input
-                type="number"
-                value={editedScores[ab]}
-                onChange={e => handleScoreChange(ab, e.target.value)}
-                min="0"
-                max="30"
-                className="score-input"
-                aria-label={`${abilityNames[ab]} score`}
-              />
-            ) : (
-              <span className="score-value">{scores[ab]}</span>
-            )}
-            <span className="modifier-value">
-              {modifiers[ab] >= 0 ? "+" : ""}{modifiers[ab]}
-            </span>
-          </div>
-        ))}
+      <div className="ability-scores-header-row">
+        <h3 id="ability-scores-heading">Atributos</h3>
+        {proficiencyBonus !== undefined && (
+          <span className="prof-bonus-badge" title="Bonificador de competencia">
+            BC: {fmt(proficiencyBonus)}
+          </span>
+        )}
       </div>
+
+      {/* Column headers */}
+      <div className="ability-col-headers" aria-hidden="true">
+        <span>Hab.</span>
+        <span>Punt.</span>
+        <span>Mod.</span>
+        <span>Sal.</span>
+      </div>
+
+      <div className="ability-scores-list">
+        {ABILITIES.map(ab => {
+          const isSaveProficient = saveProficiencies.includes(ab);
+          const saveVal = savingThrows?.[ab];
+          return (
+            <div key={ab} className="ability-item">
+              <span
+                className="ability-name"
+                title={ABILITY_NAMES[ab]}
+              >
+                {ab.toUpperCase()}
+              </span>
+
+              {isEditing ? (
+                <input
+                  type="number"
+                  value={editedScores[ab]}
+                  onChange={e => handleScoreChange(ab, e.target.value)}
+                  min="1"
+                  max="30"
+                  className="score-input"
+                  aria-label={`${ABILITY_NAMES[ab]} puntuación`}
+                />
+              ) : (
+                <span className="score-value" title={`Puntuación de ${ABILITY_NAMES[ab]}`}>
+                  {scores[ab]}
+                </span>
+              )}
+
+              <span className="modifier-value" title={`Modificador de ${ABILITY_NAMES[ab]}`}>
+                {fmt(modifiers[ab])}
+              </span>
+
+              <span
+                className={`save-value ${isSaveProficient ? "save-proficient" : ""}`}
+                title={`Salvación de ${ABILITY_NAMES[ab]}${isSaveProficient ? " (competente)" : ""}`}
+              >
+                {saveVal !== undefined ? fmt(saveVal) : "—"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
       <Button
         onClick={handleEditToggle}
         ariaLabel={isEditing ? "Guardar puntuaciones" : "Editar puntuaciones"}

@@ -1,5 +1,28 @@
 // src/utils/characterDataAdapter.js
 
+const SKILLS = [
+  { id: "acrobatics",     name: "Acrobacias",          ability: "dex" },
+  { id: "animal_handling",name: "Trato con animales",  ability: "wis" },
+  { id: "arcana",         name: "Arcanos",              ability: "int" },
+  { id: "athletics",      name: "Atletismo",            ability: "str" },
+  { id: "deception",      name: "Engaño",               ability: "cha" },
+  { id: "history",        name: "Historia",             ability: "int" },
+  { id: "insight",        name: "Perspicacia",          ability: "wis" },
+  { id: "intimidation",   name: "Intimidación",         ability: "cha" },
+  { id: "investigation",  name: "Investigación",        ability: "int" },
+  { id: "medicine",       name: "Medicina",             ability: "wis" },
+  { id: "nature",         name: "Naturaleza",           ability: "int" },
+  { id: "perception",     name: "Percepción",           ability: "wis" },
+  { id: "performance",    name: "Interpretación",       ability: "cha" },
+  { id: "persuasion",     name: "Persuasión",           ability: "cha" },
+  { id: "religion",       name: "Religión",             ability: "int" },
+  { id: "sleight_of_hand", name: "Juego de manos",     ability: "dex" },
+  { id: "stealth",        name: "Sigilo",               ability: "dex" },
+  { id: "survival",       name: "Supervivencia",        ability: "wis" },
+];
+
+export { SKILLS };
+
 /**
  * Convierte los datos crudos de la base de datos al objeto de personaje que usa la UI.
  * @param {Object} raw - Datos como vienen de la BD.
@@ -8,14 +31,12 @@
 export function fromDatabase(raw) {
   const abilityScores = raw.ability_scores;
   const abilityModifiers = {};
-  for (let ab of ["str","dex","con","int","wis","cha"]) {
+  for (let ab of ["str", "dex", "con", "int", "wis", "cha"]) {
     abilityModifiers[ab] = Math.floor((abilityScores[ab] - 10) / 2);
   }
 
   // Calcular AC base + bonificadores de features e inventario.
-  let ac = 10 + abilityModifiers.dex; // armadura no equipada por defecto
-  // En un sistema real se sumarían bonos de armaduras, escudos, etc.
-  // Simulamos un bono de armadura si existe en inventario.
+  let ac = 10 + abilityModifiers.dex;
   if (raw.inventory) {
     for (let item of raw.inventory) {
       if (item.equipped && item.effect?.ac_bonus) {
@@ -23,7 +44,6 @@ export function fromDatabase(raw) {
       }
     }
   }
-  // Features que modifican AC
   if (raw.features) {
     for (let feat of raw.features) {
       if (feat.effect?.ac_bonus) {
@@ -34,7 +54,6 @@ export function fromDatabase(raw) {
 
   // Iniciativa = modificador de destreza + otros bonos
   let initiative = abilityModifiers.dex;
-  // Simulamos bonos de features
   if (raw.features) {
     for (let feat of raw.features) {
       if (feat.effect?.initiative_bonus) {
@@ -43,22 +62,41 @@ export function fromDatabase(raw) {
     }
   }
 
-  // Procesar proficiencias de habilidad
-  const proficiencies = raw.proficiency_list || []; // formato: [{ability: 'dex', level: 'proficient'}, ...]
-  const proficiencyBonus = raw.proficiency_bonus; // dado por nivel
+  const proficiencyBonus = raw.proficiency_bonus;
 
-  // Mapeo de habilidades con modificador total
-  const abilityProficiencies = ["str","dex","con","int","wis","cha"].map(ab => {
+  // Saving throws por habilidad
+  const saveProficiencies = raw.save_proficiencies || [];
+  const savingThrows = {};
+  for (let ab of ["str", "dex", "con", "int", "wis", "cha"]) {
+    const mod = abilityModifiers[ab];
+    savingThrows[ab] = saveProficiencies.includes(ab) ? mod + proficiencyBonus : mod;
+  }
+
+  // Proficiencias de habilidad (para la sección de ability saves, legacy)
+  const abilityProfs = raw.proficiency_list || [];
+  const abilityProficiencies = ["str", "dex", "con", "int", "wis", "cha"].map(ab => {
     const baseMod = abilityModifiers[ab];
-    const prof = proficiencies.find(p => p.ability === ab);
+    const prof = abilityProfs.find(p => p.ability === ab);
     let level = "none";
     let totalMod = baseMod;
     if (prof) {
       level = prof.level;
       if (level === "proficient") totalMod += proficiencyBonus;
-      else if (level === "expert") totalMod += proficiencyBonus * 2; // house rule
+      else if (level === "expert") totalMod += proficiencyBonus * 2;
     }
     return { ability: ab, baseMod, proficiencyLevel: level, totalMod };
+  });
+
+  // Skill proficiencies (18 habilidades D&D 5e)
+  const rawSkillProfs = raw.skill_proficiencies || [];
+  const skillProficiencies = SKILLS.map(skill => {
+    const prof = rawSkillProfs.find(p => p.skill === skill.id);
+    const level = prof ? prof.level : "none";
+    const baseMod = abilityModifiers[skill.ability];
+    let totalMod = baseMod;
+    if (level === "proficient") totalMod += proficiencyBonus;
+    else if (level === "expert") totalMod += proficiencyBonus * 2;
+    return { ...skill, level, totalMod };
   });
 
   return {
@@ -72,7 +110,10 @@ export function fromDatabase(raw) {
     abilityScores,
     abilityModifiers,
     proficiencyBonus,
-    abilityProficiencies, // [{ ability, baseMod, proficiencyLevel, totalMod }]
+    savingThrows,
+    saveProficiencies,
+    abilityProficiencies,
+    skillProficiencies,
     combatInfo: {
       ac,
       initiative,
@@ -84,7 +125,6 @@ export function fromDatabase(raw) {
       hitDiceTotal: raw.hit_dice?.total || 0,
       hitDiceRemaining: raw.hit_dice?.remaining || 0,
     },
-    // ... otros datos que se irán agregando
   };
 }
 
@@ -94,7 +134,6 @@ export function fromDatabase(raw) {
  * @returns {Object} Datos listos para enviar a la BD.
  */
 export function toDatabase(uiCharacter) {
-  // Transformación inversa (ejemplo básico)
   return {
     id: uiCharacter.id,
     name: uiCharacter.name,
@@ -118,6 +157,9 @@ export function toDatabase(uiCharacter) {
     proficiency_list: uiCharacter.abilityProficiencies
       .filter(p => p.proficiencyLevel !== "none")
       .map(p => ({ ability: p.ability, level: p.proficiencyLevel })),
-    // Las demás propiedades se añadirán según se necesiten
+    save_proficiencies: uiCharacter.saveProficiencies || [],
+    skill_proficiencies: (uiCharacter.skillProficiencies || [])
+      .filter(s => s.level !== "none")
+      .map(s => ({ skill: s.id, level: s.level })),
   };
 }

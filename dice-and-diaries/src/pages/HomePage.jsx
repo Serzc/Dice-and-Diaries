@@ -1,64 +1,100 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchHomeData } from "../mock/homeMock";
 import HomeCampaignCard from "../components/Home/HomeCampaignCard";
-import Button from "../components/common/Button";
 import "./HomePage.css";
+
+const TABS = [
+  { id: "sessions", label: "Sesiones Anteriores" },
+  { id: "join", label: "Unirse a una Campaña" },
+  { id: "plan", label: "Planificar Sesión" },
+];
 
 const HomePage = () => {
   const [data, setData] = useState(null);
+  const [activeTab, setActiveTab] = useState("sessions");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchHomeData().then(setData);
   }, []);
 
-  if (!data) return <div className="loading">Cargando...</div>;
+  if (!data) return <div className="loading home-loading">Cargando...</div>;
 
   return (
     <main className="home-page" aria-labelledby="home-heading">
-      <h1 id="home-heading" className="page-title">Home</h1>
+      <h1 id="home-heading" className="sr-only">Home</h1>
 
-      <div className="home-layout">
-        {/* Columna principal: Campañas */}
-        <section className="campaigns-section" aria-labelledby="campaigns-heading">
-          <h2 id="campaigns-heading">Campañas</h2>
-          <h3>Sesiones Anteriores</h3>
-          {data.recentSessions && data.recentSessions.length > 0 ? (
-            <ul className="sessions-list">
-              {/* Iterar sesiones cuando existan */}
-            </ul>
-          ) : (
-            <p className="empty-message">No hay sesiones recientes.</p>
-          )}
+      {/* Tab bar */}
+      <nav className="home-tabs" aria-label="Secciones de inicio">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+            aria-current={activeTab === tab.id ? "page" : undefined}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
 
-          <div className="campaign-cards-list" role="list">
-            {data.campaigns.map((camp) => (
-              <HomeCampaignCard key={camp.id} campaign={camp} />
-            ))}
-          </div>
-        </section>
-
-        {/* Barra lateral */}
-        <aside className="sidebar" aria-label="Acciones rápidas">
-          <section className="sidebar-section" aria-labelledby="characters-heading">
-            <h2 id="characters-heading">Mis Personajes</h2>
-            <p className="stat-text">{data.myCharactersCount} personajes creados</p>
-            <Button onClick={() => alert("Unirse a campaña")}>
-              Unirse a una Campaña
-            </Button>
+      <div className="home-content">
+        {/* Sessions tab: campaign cards */}
+        {activeTab === "sessions" && (
+          <section aria-labelledby="sessions-heading">
+            <h2 id="sessions-heading" className="sr-only">Sesiones Anteriores</h2>
+            {data.campaigns.length === 0 ? (
+              <p className="home-empty">No hay campañas recientes.</p>
+            ) : (
+              <div className="campaign-cards-grid" role="list">
+                {data.campaigns.map((camp) => (
+                  <HomeCampaignCard
+                    key={camp.id}
+                    campaign={camp}
+                    onClick={() => navigate(`/campaigns/${camp.id}/chat`)}
+                  />
+                ))}
+              </div>
+            )}
           </section>
+        )}
 
-          <section className="sidebar-section" aria-labelledby="creatures-heading">
-            <h2 id="creatures-heading">Mis Criaturas</h2>
-            <p className="stat-text">{data.myCreaturesCount} criaturas disponibles</p>
-            <Button onClick={() => alert("Planificar sesión")}>
-              Planificar Sesión
-            </Button>
+        {/* Join tab */}
+        {activeTab === "join" && (
+          <section className="tab-panel" aria-labelledby="join-heading">
+            <h2 id="join-heading" className="tab-panel-title">Unirse a una Campaña</h2>
+            <p className="tab-panel-desc">Ingresa el código de invitación para unirte a una campaña existente.</p>
+            <div className="join-form">
+              <input
+                type="text"
+                className="join-input"
+                placeholder="Código de campaña..."
+                aria-label="Código de invitación"
+              />
+              <button className="join-btn" onClick={() => alert("Unirse")}>Unirse</button>
+            </div>
           </section>
+        )}
 
-          <a href="/profile" className="profile-link">
-            Mi Perfil
-          </a>
-        </aside>
+        {/* Plan tab */}
+        {activeTab === "plan" && (
+          <section className="tab-panel" aria-labelledby="plan-heading">
+            <h2 id="plan-heading" className="tab-panel-title">Planificar Sesión</h2>
+            <p className="tab-panel-desc">Selecciona una campaña para coordinar la próxima sesión.</p>
+            <div className="plan-campaigns" role="list">
+              {data.campaigns.map((camp) => (
+                <button
+                  key={camp.id}
+                  className="plan-campaign-btn"
+                  onClick={() => alert(`Planificar ${camp.name}`)}
+                >
+                  {camp.name}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

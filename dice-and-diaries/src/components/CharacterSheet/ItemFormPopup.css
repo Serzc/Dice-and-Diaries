@@ -1,2 +1,3 @@
-.item-popup { min-width: 350px; }
-.effect-toggle { margin: 0.5rem 0; }
+.item-popup {
+  max-width: 460px;
+}
