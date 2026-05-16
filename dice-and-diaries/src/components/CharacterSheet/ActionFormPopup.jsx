@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "../common/Popup.css";
 import "./ActionFormPopup.css";
 
@@ -10,6 +11,8 @@ const defaultAction = {
 };
 
 const ActionFormPopup = ({ action, onSave, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [form, setForm] = useState(action || defaultAction);
 
   useEffect(() => {
@@ -33,10 +36,13 @@ const ActionFormPopup = ({ action, onSave, onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de acción">
-      <div className="popup-content action-popup" onClick={e => e.stopPropagation()}>
+    <div className="popup-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="action-popup-title"
+         onKeyDown={(e) => e.key === "Escape" && onClose()}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popup-content action-popup" ref={contentRef}>
         <div className="popup-header">
-          <h3 className="popup-title">{action ? "Editar Acción" : "Nueva Acción"}</h3>
+          <h2 id="action-popup-title" className="popup-title">{action ? "Editar Acción" : "Nueva Acción"}</h2>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

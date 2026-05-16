@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "../common/Popup.css";
 import "./ItemFormPopup.css";
 
@@ -13,6 +14,8 @@ const defaultItem = {
 };
 
 const ItemFormPopup = ({ item, onSave, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [form, setForm] = useState(item || defaultItem);
   const [hasEffect, setHasEffect] = useState(!!item?.effect);
 
@@ -41,10 +44,13 @@ const ItemFormPopup = ({ item, onSave, onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de objeto">
-      <div className="popup-content item-popup" onClick={e => e.stopPropagation()}>
+    <div className="popup-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="item-popup-title"
+         onKeyDown={(e) => e.key === "Escape" && onClose()}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popup-content item-popup" ref={contentRef}>
         <div className="popup-header">
-          <h3 className="popup-title">{item ? "Editar Objeto" : "Nuevo Objeto"}</h3>
+          <h2 id="item-popup-title" className="popup-title">{item ? "Editar Objeto" : "Nuevo Objeto"}</h2>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

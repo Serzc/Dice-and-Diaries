@@ -141,6 +141,24 @@ body:has(.home-page) #root {
   background: var(--color-primary-hover);
 }
 
+.join-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.join-error {
+  margin-top: 0.75rem;
+  color: #f87171;
+  font-size: 0.9rem;
+}
+
+.join-success {
+  margin-top: 0.75rem;
+  color: #4ade80;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .plan-campaigns {
   display: flex;
   flex-direction: column;

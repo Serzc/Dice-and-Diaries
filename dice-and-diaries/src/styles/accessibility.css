@@ -1,0 +1,51 @@
+/* ============================================================
+   ACCESSIBILITY — skip link + global focus-visible styles
+   ============================================================ */
+
+/* Skip-to-content link — hidden until focused */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  padding: 0.6rem 1.2rem;
+  background: var(--color-primary, #7c3aed);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-md, 8px) var(--radius-md, 8px);
+  z-index: 9999;
+  transition: top 0.12s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── Global keyboard focus ring ─────────────────────────────
+   Browsers show an outline on :focus; we suppress it globally
+   and replace it with a consistent :focus-visible style.       */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 3px solid var(--color-primary, #7c3aed);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Buttons and links that already paint their own focus style
+   can override this at the component level.                    */
+
+/* ── Inputs & selects ───────────────────────────────────────
+   Inputs already use border + box-shadow on :focus in most
+   component CSS. Keep those but add outline-offset fallback.   */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary, #7c3aed);
+  outline-offset: 0;
+}

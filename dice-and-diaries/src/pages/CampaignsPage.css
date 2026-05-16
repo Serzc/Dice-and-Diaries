@@ -69,3 +69,17 @@ body:has(.campaigns-page) #root {
   background-color: var(--color-primary-hover);
   transform: scale(1.08);
 }
+
+.cc-invite-code {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-align: center;
+  color: var(--color-primary);
+  background: rgba(124, 58, 237, 0.08);
+  border: 2px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin: 1rem 0;
+  user-select: all;
+}

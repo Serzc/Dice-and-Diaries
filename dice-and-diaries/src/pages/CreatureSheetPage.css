@@ -593,6 +593,168 @@ body:has(.creature-sheet-page) #root {
   resize: vertical;
 }
 
+/* Small button variant */
+.cs-btn-sm {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+/* ==================== Campaign chips ==================== */
+.sb-campaign-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.sb-campaign-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.sb-chip-remove {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.65rem;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.sb-chip-remove:hover { opacity: 1; }
+
+.sb-empty-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.sb-campaign-select {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* ==================== Notes tab (creature sheet) ==================== */
+.cn-notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.2rem;
+}
+
+.cn-notes-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.cn-note-card {
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.cn-note-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.1rem 0.1rem 0.1rem 0;
+  gap: 0.5rem;
+}
+
+.cn-note-title-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  gap: 0.5rem;
+}
+
+.cn-note-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.cn-note-chevron {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.cn-note-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.cn-note-date {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.cn-visibility-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cn-vis-gm           { background: #fef3c7; color: #92400e; }
+.cn-vis-view         { background: #dbeafe; color: #1e40af; }
+.cn-vis-edit         { background: #d1fae5; color: #065f46; }
+
+.cn-note-body {
+  padding: 0.6rem 0.75rem 0.75rem;
+  border-top: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+}
+
+.cn-note-content {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  margin: 0 0 0.6rem;
+  line-height: 1.5;
+}
+
+.cn-note-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.cn-action-btn {
+  background: none;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cn-action-btn:hover { background: var(--color-gray-100); color: var(--color-text-primary); }
+
+.cn-action-delete { color: #dc2626; border-color: #fca5a5; }
+.cn-action-delete:hover { background: #fee2e2; }
+
 /* Responsivo */
 @media (max-width: 600px) {
   .sb-abilities-grid {

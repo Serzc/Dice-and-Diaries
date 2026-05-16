@@ -1,0 +1,26 @@
+/* CampaignNotesPopup — popup-specific overrides */
+
+.cnp-popup {
+  max-width: 580px;
+}
+
+.cnp-body {
+  max-height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cnp-status {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.cnp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

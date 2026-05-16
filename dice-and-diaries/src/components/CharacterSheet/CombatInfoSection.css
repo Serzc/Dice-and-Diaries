@@ -50,3 +50,66 @@ input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-primary-light);
 }
+
+.combat-item--wide { grid-column: 1 / -1; }
+
+.hit-dice-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hit-die-use-btn {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--color-primary, #7c3aed);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-primary, #7c3aed);
+  cursor: pointer;
+}
+.hit-die-use-btn:hover { background: var(--color-primary, #7c3aed); color: #fff; }
+
+/* Death saves */
+.death-saves {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.75rem;
+  background: rgba(220, 38, 38, 0.07);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+.death-saves-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #dc2626;
+  margin-bottom: 0.4rem;
+}
+.death-saves-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+.death-saves-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: 4.5rem;
+  flex-shrink: 0;
+}
+.death-saves-type.success { color: #16a34a; }
+.death-saves-type.failure { color: #dc2626; }
+.death-save-box {
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #16a34a;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.death-save-box.failure { border-color: #dc2626; }
+.death-save-box.checked { background: #16a34a; }
+.death-save-box.failure.checked { background: #dc2626; }

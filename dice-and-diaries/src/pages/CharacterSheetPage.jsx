@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { fetchCharacterSheet, saveCharacterSection } from "../mock/db";
-import { fromDatabase, toDatabase } from "../utils/characterDataAdapter";
+import {
+  fromDatabase,
+  toDatabase,
+  computeProficiencyBonus,
+  serializeAbilityScores,
+  serializeSaveProficiencies,
+  serializeSkillProficiencies,
+} from "../utils/characterDataAdapter";
 import GeneralInfo from "../components/CharacterSheet/GeneralInfo";
 import AbilityScoresSection from "../components/CharacterSheet/AbilityScoresSection";
 import AbilityProficienciesSection from "../components/CharacterSheet/AbilityProficienciesSection";
@@ -14,19 +21,43 @@ import SpellsList from "../components/CharacterSheet/SpellsList";
 import InventoryList from "../components/CharacterSheet/InventoryList";
 import StoryPanel from "../components/CharacterSheet/StoryPanel";
 import ImpersonatePopup from "../components/CharacterSheet/ImpersonatePopup";
-import "./CharacterSheetPage.css";
 import Button from "../components/common/Button";
+import "./CharacterSheetPage.css";
+
+// Recompute AC from equipped items and feature effects
+function calcAC(abilityModifiers, inventory = [], features = []) {
+  let ac = 10 + (abilityModifiers?.dex ?? 0);
+  inventory.forEach(item => {
+    if (item.equipped && item.effect?.ac_bonus) ac += item.effect.ac_bonus;
+  });
+  features.forEach(feat => {
+    if (feat.effect?.ac_bonus) ac += feat.effect.ac_bonus;
+    if (feat.effect?.modifiers?.ac_bonus) ac += feat.effect.modifiers.ac_bonus;
+  });
+  return ac;
+}
+
+// Recompute initiative from DEX mod and feature bonuses
+function calcInitiative(abilityModifiers, features = []) {
+  let init = abilityModifiers?.dex ?? 0;
+  features.forEach(feat => {
+    if (feat.effect?.initiative_bonus) init += feat.effect.initiative_bonus;
+  });
+  return init;
+}
 
 const CharacterSheetPage = () => {
   const { id } = useParams();
-  const [character, setCharacter] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [character,       setCharacter]       = useState(null);
+  const [loading,         setLoading]         = useState(true);
   const [showImpersonate, setShowImpersonate] = useState(false);
 
-  // Cargar datos crudos y transformarlos a formato UI
   useEffect(() => {
     fetchCharacterSheet(id).then(rawData => {
       const uiData = fromDatabase(rawData);
+      // Store arrays needed for reactive AC/initiative recalculation
+      uiData.inventory = rawData.inventory ?? [];
+      uiData.features  = rawData.stored_features ?? rawData.features ?? [];
       setCharacter(uiData);
       setLoading(false);
     });
@@ -35,8 +66,34 @@ const CharacterSheetPage = () => {
   const updateCharacter = useCallback((partialData) => {
     setCharacter(prev => {
       const updated = { ...prev, ...partialData };
-      // Persist core stats in DB format; section-specific arrays saved by key name
-      const coreKeys = ["name","classes","species","background","level","imageUrl","abilityScores","combatInfo","saveProficiencies","skillProficiencies","abilityProficiencies"];
+
+      // Recompute proficiency bonus when level changes
+      if ("level" in partialData) {
+        updated.proficiencyBonus = computeProficiencyBonus(updated.level);
+      }
+
+      // Recompute AC and initiative when relevant data changes
+      if ("inventory" in partialData || "features" in partialData || "abilityScores" in partialData) {
+        if ("abilityScores" in partialData) {
+          // Recompute modifiers inline
+          const scores = updated.abilityScores;
+          const mods = {};
+          for (const ab of ["str","dex","con","int","wis","cha"]) {
+            mods[ab] = Math.floor(((scores[ab] ?? 10) - 10) / 2);
+          }
+          updated.abilityModifiers = mods;
+        }
+        updated.combatInfo = {
+          ...updated.combatInfo,
+          ac:         calcAC(updated.abilityModifiers, updated.inventory, updated.features),
+          initiative: calcInitiative(updated.abilityModifiers, updated.features),
+        };
+      }
+
+      // Persist to mock / real DB
+      const coreKeys = ["name","classes","species","background","level","imageUrl",
+                        "abilityScores","combatInfo","saveProficiencies","skillProficiencies",
+                        "abilityProficiencies","spellcastingAbility"];
       const isCore = Object.keys(partialData).some(k => coreKeys.includes(k));
       if (isCore) {
         saveCharacterSection(id, "core", toDatabase(updated));
@@ -44,6 +101,7 @@ const CharacterSheetPage = () => {
         const [section, value] = Object.entries(partialData)[0];
         saveCharacterSection(id, section, value);
       }
+
       return updated;
     });
   }, [id]);
@@ -55,15 +113,9 @@ const CharacterSheetPage = () => {
       <h1 id="sheet-heading" className="page-title">{character.name}</h1>
 
       <div className="sheet-grid">
-        {/* Fila 1: Información general (todo el ancho) */}
         <div className="sheet-area area-general">
-          <GeneralInfo
-            character={character}
-            onSave={(data) => updateCharacter(data)}
-          />
+          <GeneralInfo character={character} onSave={(data) => updateCharacter(data)} />
         </div>
-
-        {/* Fila 2, Col 1: Ability Scores */}
         <div className="sheet-area area-abilities">
           <AbilityScoresSection
             scores={character.abilityScores}
@@ -74,8 +126,6 @@ const CharacterSheetPage = () => {
             onSave={(data) => updateCharacter(data)}
           />
         </div>
-
-        {/* Fila 2, Col 2: Skill Proficiencies */}
         <div className="sheet-area area-proficiencies">
           <AbilityProficienciesSection
             skills={character.skillProficiencies}
@@ -83,57 +133,39 @@ const CharacterSheetPage = () => {
             onSave={(data) => updateCharacter({ skillProficiencies: data })}
           />
         </div>
-
-        {/* Fila 2, Col 3: Información de combate */}
         <div className="sheet-area area-combat">
           <CombatInfoSection
             combatInfo={character.combatInfo}
             onSave={(data) => updateCharacter(data)}
           />
         </div>
-
-        {/* Fila 3, Col 1: Acciones */}
         <div className="sheet-area area-actions">
           <ActionsPanel characterId={character.id} onSave={(data) => updateCharacter({ actions: data })} />
         </div>
-
-        {/* Fila 3, Col 2: Bonus Actions */}
         <div className="sheet-area area-bonus-actions">
           <BonusActionsPanel characterId={character.id} onSave={(data) => updateCharacter({ bonusActions: data })} />
         </div>
-
-        {/* Fila 4, Col 1: Other Proficiencies */}
         <div className="sheet-area area-other-profs">
           <OtherProficienciesPanel
             characterId={character.id}
             onSave={(data) => updateCharacter({ otherProficiencies: data })}
           />
         </div>
-
-        {/* Fila 4, Col 2: Features */}
         <div className="sheet-area area-features">
           <FeaturesList characterId={character.id} onSave={(data) => updateCharacter({ features: data })} />
         </div>
-
-        {/* Fila 5, Col 1: Hechizos */}
         <div className="sheet-area area-spells">
           <SpellsList character={character} onSave={(data) => updateCharacter(data)} />
         </div>
-
-        {/* Fila 5, Col 2: Inventario */}
         <div className="sheet-area area-inventory">
           <InventoryList characterId={character.id} onSave={(data) => updateCharacter({ inventory: data })} />
         </div>
-
-        {/* Fila 6: Historia (todo el ancho) */}
         <div className="sheet-area area-story">
           <StoryPanel characterId={character.id} onSave={(note) => updateCharacter({ characterNote: note })} />
         </div>
-
-        {/* Fila 7: Botón de Impersonar */}
         <div className="sheet-area area-impersonate">
           <Button onClick={() => setShowImpersonate(true)} ariaLabel="Impersonar personaje">
-            🎭 Impersonar
+            Impersonar
           </Button>
         </div>
       </div>

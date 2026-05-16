@@ -72,6 +72,25 @@
   outline-offset: 2px;
 }
 
+/* Focus ring for all interactive elements inside popups */
+.popup-content button:focus-visible,
+.popup-content a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dice-btn:focus-visible,
+.adv-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.popup-select-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
 /* --- Body --- */
 .popup-body {
   padding: 1.2rem;

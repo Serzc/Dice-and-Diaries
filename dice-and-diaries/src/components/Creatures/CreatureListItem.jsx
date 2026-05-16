@@ -1,5 +1,6 @@
 // src/components/Creatures/CreatureListItem.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import CreatureQuickView from "./CreatureQuickView";
 import "./CreatureListItem.css";
 
@@ -63,9 +64,11 @@ const CreatureListItem = ({
   isGM,
   onToggle,
   onFolderEnter,
+  onPossess,
   currentUser,
 }) => {
   const isFolder = item.type === "folder" || item.parentId !== undefined;
+  const navigate = useNavigate();
 
   if (isFolder) {
     return (
@@ -111,6 +114,13 @@ const CreatureListItem = ({
         <span className={`item-name${isExpanded ? " expanded" : ""}`}>
           {item.name}
         </span>
+        <button
+          className="btn-ver-hoja-inline"
+          onClick={(e) => { e.stopPropagation(); navigate(`/creatures/${item.id}`); }}
+          aria-label={`Ver hoja de ${item.name}`}
+        >
+          Ver hoja
+        </button>
         {isExpanded ? <ChevronDown /> : <ChevronRight />}
       </div>
 
@@ -119,9 +129,7 @@ const CreatureListItem = ({
           <CreatureQuickView
             creature={item}
             isGM={isGM}
-            onPossess={(creature) => {
-              console.log("[Poseer] criatura:", creature.name);
-            }}
+            onPossess={onPossess}
           />
         </div>
       )}

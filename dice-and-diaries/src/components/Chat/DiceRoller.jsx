@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "../common/Popup.css";
 
 const DICE_OPTIONS = [4, 6, 8, 10, 12, 20, 100];
 
 const DiceRoller = ({ onRoll, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [count, setCount] = useState(1);
   const [sides, setSides] = useState(20);
   const [advantage, setAdvantage] = useState(false);
@@ -35,10 +38,13 @@ const DiceRoller = ({ onRoll, onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Tirada de dados">
-      <div className="popup-content" onClick={e => e.stopPropagation()}>
+    <div className="popup-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="dice-roller-title"
+         onKeyDown={(e) => e.key === "Escape" && onClose()}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popup-content" ref={contentRef}>
         <div className="popup-header">
-          <h3 className="popup-title">Tirada de Dados</h3>
+          <h2 id="dice-roller-title" className="popup-title">Tirada de Dados</h2>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

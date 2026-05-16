@@ -33,6 +33,16 @@ const CreaturesPage = () => {
     navigate(`/creatures/folder/${id}`);
   };
 
+  const handlePossess = (creature) => {
+    const ids = creature.campaignIds ?? [];
+    if (ids.length === 0) return;
+    if (ids.length === 1) {
+      navigate(`/campaigns/${ids[0]}/chat?characterId=${creature.id}&characterName=${encodeURIComponent(creature.name)}`);
+      return;
+    }
+    navigate(`/creatures/${creature.id}`);
+  };
+
   const handleBack = () => {
     if (data.breadcrumb.length > 1) {
       const parentId = data.breadcrumb[data.breadcrumb.length - 2].id;
@@ -102,6 +112,7 @@ const CreaturesPage = () => {
               isGM={currentUser.isGM}
               onToggle={handleToggle}
               onFolderEnter={handleFolderEnter}
+              onPossess={handlePossess}
               currentUser={currentUser}
             />
           ))}

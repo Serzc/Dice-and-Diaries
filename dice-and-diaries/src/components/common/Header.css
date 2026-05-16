@@ -34,3 +34,45 @@
   color: var(--color-purple-900);
   font-weight: 700;
 }
+
+.nav-list a:focus-visible {
+  outline: 3px solid var(--color-white);
+  outline-offset: 2px;
+}
+
+.header-logout-btn:focus-visible {
+  outline: 3px solid var(--color-white);
+  outline-offset: 2px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.header-username {
+  color: rgba(255,255,255,0.75);
+  font-size: 0.85rem;
+}
+
+.header-logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.85);
+  padding: 0.25rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.header-logout-btn:hover {
+  background-color: rgba(255,255,255,0.1);
+}

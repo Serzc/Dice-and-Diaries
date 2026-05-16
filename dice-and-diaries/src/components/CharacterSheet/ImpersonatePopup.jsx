@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchCharacterCampaigns } from "../../mock/db";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "../common/Popup.css";
 import "./ImpersonatePopup.css";
 
 const ImpersonatePopup = ({ characterId, characterName, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [campaigns, setCampaigns] = useState([]);
   const navigate = useNavigate();
 
@@ -17,10 +20,13 @@ const ImpersonatePopup = ({ characterId, characterName, onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Impersonar personaje">
-      <div className="popup-content impersonate-popup" onClick={e => e.stopPropagation()}>
+    <div className="popup-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="impersonate-popup-title"
+         onKeyDown={(e) => e.key === "Escape" && onClose()}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popup-content impersonate-popup" ref={contentRef}>
         <div className="popup-header">
-          <h3 className="popup-title">Impersonar a {characterName}</h3>
+          <h2 id="impersonate-popup-title" className="popup-title">Impersonar a {characterName}</h2>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

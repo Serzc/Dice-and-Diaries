@@ -7,7 +7,7 @@ import WhisperPopup from "./WhisperPopup";
 import NPCsPopup from "./NPCsPopup";
 import "./ChatSidebar.css";
 
-const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, onSendDiceRoll, onSendWhisper, onSendAbilityAppend, onSendNoteAppend, onPossessNPC }) => {
+const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, campaignId, currentUserId, onSendDiceRoll, onSendWhisper, onSendAbilityAppend, onSendNoteAppend, onNoteCreated, onPossessNPC }) => {
   const [activePopup, setActivePopup] = useState(null);
 
   const closePopup = () => setActivePopup(null);
@@ -62,10 +62,11 @@ const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, onSendDiceRol
       {activePopup === "notes" && (
         <NotesPopup
           notes={notes}
-          onAppend={(note) => {
-            onSendNoteAppend(note);
-            closePopup();
-          }}
+          campaignId={campaignId}
+          currentUserId={currentUserId}
+          isGM={isGM}
+          onAppend={(note) => { onSendNoteAppend(note); }}
+          onNoteCreated={onNoteCreated}
           onClose={closePopup}
         />
       )}

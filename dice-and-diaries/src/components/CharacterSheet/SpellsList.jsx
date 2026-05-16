@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { fetchSpellcastingData } from "../../mock/db";
 import { getSpellcastingStats } from "../../utils/spellUtils";
 import SpellLevelGroup from "./SpellLevelGroup";
@@ -7,27 +7,29 @@ import Button from "../common/Button";
 import "./SpellsList.css";
 
 const SpellsList = ({ character, onSave }) => {
-  const [spellData, setSpellData] = useState(null);
-  const [editingSpell, setEditingSpell] = useState(null);
-  const [showAddSpell, setShowAddSpell] = useState(false);
+  const [spellData,          setSpellData]          = useState(null);
+  const [editingSpell,       setEditingSpell]       = useState(null);
+  const [showAddSpell,       setShowAddSpell]       = useState(false);
   const [spellcastingAbility, setSpellcastingAbility] = useState("");
-  const [spellSlots, setSpellSlots] = useState({});
-  const [spells, setSpells] = useState([]);
+  const [spellSlots,         setSpellSlots]         = useState({});
+  const [spells,             setSpells]             = useState([]);
 
   const { abilityScores, proficiencyBonus } = character;
 
   useEffect(() => {
     fetchSpellcastingData(character.id).then(data => {
-      setSpellcastingAbility(data.ability);
-      setSpellSlots(data.slots);
-      setSpells(data.spells);
+      setSpellcastingAbility(data.ability || "int");
+      setSpellSlots(data.slots || {});
+      setSpells(data.spells || []);
       setSpellData(data);
     });
   }, [character.id]);
 
-  const stats = getSpellcastingStats(spellcastingAbility, abilityScores, proficiencyBonus);
+  const safeAbility = spellcastingAbility || "int";
+  const stats = getSpellcastingStats(safeAbility, abilityScores, proficiencyBonus);
   const maxLevel = Math.max(...Object.keys(spellSlots).map(Number), 0);
 
+  // ── Spell slots ──────────────────────────────────────────────────────
   const handleSpendSlot = (level) => {
     const updated = { ...spellSlots, [level]: { ...spellSlots[level], current: Math.max(0, spellSlots[level].current - 1) } };
     setSpellSlots(updated);
@@ -40,32 +42,34 @@ const SpellsList = ({ character, onSave }) => {
     onSave && onSave({ spellSlots: updated });
   };
 
-  const handleTogglePrepared = (spellId) => {
-    setSpells(prev => prev.map(s => s.id === spellId ? { ...s, prepared: !s.prepared } : s));
+  // ── Spellcasting ability ──────────────────────────────────────────────
+  const handleAbilityChange = (e) => {
+    const ability = e.target.value;
+    setSpellcastingAbility(ability);
+    onSave && onSave({ spellcastingAbility: ability });
   };
 
-  const handleSaveSpell = (spellData) => {
-    if (editingSpell) {
-      setSpells(prev => prev.map(s => s.id === spellData.id ? spellData : s));
-    } else {
-      setSpells(prev => [...prev, spellData]);
-    }
+  // ── Individual spells ─────────────────────────────────────────────────
+  const handleTogglePrepared = (spellId) => {
+    const updated = spells.map(s => s.id === spellId ? { ...s, prepared: !s.prepared } : s);
+    setSpells(updated);
+    onSave && onSave({ spells: updated });
+  };
+
+  const handleSaveSpell = (spellFormData) => {
+    const updated = editingSpell
+      ? spells.map(s => s.id === spellFormData.id ? spellFormData : s)
+      : [...spells, { ...spellFormData, id: spellFormData.id || Date.now() }];
     setShowAddSpell(false);
     setEditingSpell(null);
+    setSpells(updated);
+    onSave && onSave({ spells: updated });
   };
 
   const handleDeleteSpell = (spellId) => {
-    setSpells(prev => prev.filter(s => s.id !== spellId));
-  };
-
-  const openEditSpell = (spell) => {
-    setEditingSpell(spell);
-    setShowAddSpell(true);
-  };
-
-  const openNewSpell = () => {
-    setEditingSpell(null);
-    setShowAddSpell(true);
+    const updated = spells.filter(s => s.id !== spellId);
+    setSpells(updated);
+    onSave && onSave({ spells: updated });
   };
 
   if (!spellData) return <div className="loading">Cargando hechizos...</div>;
@@ -79,7 +83,7 @@ const SpellsList = ({ character, onSave }) => {
           <select
             id="spell-ability"
             value={spellcastingAbility}
-            onChange={e => setSpellcastingAbility(e.target.value)}
+            onChange={handleAbilityChange}
           >
             <option value="int">Inteligencia</option>
             <option value="wis">Sabiduría</option>
@@ -90,7 +94,7 @@ const SpellsList = ({ character, onSave }) => {
           <span>Mod: {stats.spellMod >= 0 ? "+" : ""}{stats.spellMod}</span>
           <span>CD: {stats.spellSaveDC}</span>
         </div>
-        <Button onClick={openNewSpell} ariaLabel="Agregar hechizo">+</Button>
+        <Button onClick={() => { setEditingSpell(null); setShowAddSpell(true); }} ariaLabel="Agregar hechizo">+</Button>
       </div>
 
       {Array.from({ length: maxLevel }, (_, i) => i + 1).map(level => (
@@ -102,7 +106,7 @@ const SpellsList = ({ character, onSave }) => {
           onSpendSlot={handleSpendSlot}
           onRecoverSlot={handleRecoverSlot}
           onTogglePrepared={handleTogglePrepared}
-          onEditSpell={openEditSpell}
+          onEditSpell={(spell) => { setEditingSpell(spell); setShowAddSpell(true); }}
           onDeleteSpell={handleDeleteSpell}
         />
       ))}

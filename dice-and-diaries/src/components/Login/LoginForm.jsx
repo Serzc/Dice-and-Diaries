@@ -1,41 +1,36 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import FormInput from "./FormInput";
 import Button from "../common/Button";
-import { loginUser } from "../../mock/db";
 
 const LoginForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({});
+  const { login } = useAuth();
+  const navigate   = useNavigate();
+
+  const [username,  setUsername]  = useState("");
+  const [password,  setPassword]  = useState("");
+  const [errors,    setErrors]    = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const validate = () => {
-    const newErrors = {};
-    if (!username.trim()) newErrors.username = "El nombre de usuario es obligatorio";
-    if (!password) newErrors.password = "La contraseña es obligatoria";
-    return newErrors;
+    const e = {};
+    if (!username.trim()) e.username = "El nombre de usuario es obligatorio";
+    if (!password)        e.password = "La contraseña es obligatoria";
+    return e;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
+
     setIsLoading(true);
     try {
-      const user = await loginUser(username, password);
-      if (user) {
-        // Aquí luego manejarás el estado global de autenticación (contexto, Redux, etc.)
-        navigate("/");
-      } else {
-        setErrors({ general: "Nombre de usuario o contraseña incorrectos" });
-      }
+      await login(username.trim(), password);
+      navigate("/");
     } catch (err) {
-      setErrors({ general: "Error de conexión. Inténtelo de nuevo." });
+      setErrors({ general: err.message || "Error de conexión. Inténtelo de nuevo." });
     } finally {
       setIsLoading(false);
     }
@@ -44,9 +39,7 @@ const LoginForm = () => {
   return (
     <form onSubmit={handleSubmit} noValidate className="login-form">
       {errors.general && (
-        <div className="alert alert-error" role="alert">
-          {errors.general}
-        </div>
+        <div className="alert alert-error" role="alert">{errors.general}</div>
       )}
       <FormInput
         label="Nombre de usuario"

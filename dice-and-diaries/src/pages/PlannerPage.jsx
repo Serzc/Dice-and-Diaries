@@ -1,5 +1,6 @@
 // src/pages/PlannerPage.jsx
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { fetchCampaigns, fetchPlanner, toggleSlot, computeOverlap, getWeekDays, TIME_SLOTS, DAY_LABELS } from "../mock/db";
 import "./PlannerPage.css";
 
@@ -12,6 +13,7 @@ function overlapClass(count, total) {
 }
 
 const PlannerPage = () => {
+  const [searchParams] = useSearchParams();
   const [campaigns, setCampaigns] = useState([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState(null);
   const [data, setData] = useState(null);
@@ -20,17 +22,22 @@ const PlannerPage = () => {
   const [toggling, setToggling] = useState(null);
 
   useEffect(() => {
+    const urlCampaignId = searchParams.get("campaignId") ? Number(searchParams.get("campaignId")) : null;
     fetchCampaigns().then((list) => {
       setCampaigns(list);
-      if (list.length > 0) setSelectedCampaignId(list[0].id);
+      if (urlCampaignId && list.some(c => c.id === urlCampaignId)) {
+        setSelectedCampaignId(urlCampaignId);
+      } else if (list.length > 0) {
+        setSelectedCampaignId(list[0].id);
+      }
     });
   }, []);
 
   useEffect(() => {
     if (selectedCampaignId == null) return;
     setData(null);
-    fetchPlanner(selectedCampaignId).then(setData);
-  }, [selectedCampaignId]);
+    fetchPlanner(selectedCampaignId, weekStart).then(setData);
+  }, [selectedCampaignId, weekStart]);
 
   useEffect(() => {
     setWeekDays(getWeekDays(weekStart));

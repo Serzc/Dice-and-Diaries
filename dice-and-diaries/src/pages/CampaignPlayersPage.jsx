@@ -1,14 +1,16 @@
 // src/pages/CampaignPlayersPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchCampaignPlayers, kickPlayer, invitePlayer } from "../mock/db";
+import { useAuth } from "../context/AuthContext";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import "../components/common/Popup.css";
 import "./CampaignPlayersPage.css";
 
-const CURRENT_USER_ID = 1;
-
 // ── Invite popup ──────────────────────────────────────────────────────────────
 const InvitePopup = ({ onInvite, onClose, error }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState("");
@@ -33,12 +35,14 @@ const InvitePopup = ({ onInvite, onClose, error }) => {
       className="popup-overlay"
       role="dialog"
       aria-modal="true"
+      aria-labelledby="invite-popup-title"
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="popup-content" style={{ maxWidth: "360px" }}>
+      <div className="popup-content" style={{ maxWidth: "360px" }} ref={contentRef}>
         <form onSubmit={handleSubmit}>
           <div className="popup-header">
-            <h2 className="popup-title">Invitar jugador</h2>
+            <h2 id="invite-popup-title" className="popup-title">Invitar jugador</h2>
             <button type="button" className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
           </div>
           <div className="popup-body">
@@ -71,6 +75,8 @@ const InvitePopup = ({ onInvite, onClose, error }) => {
 const CampaignPlayersPage = () => {
   const { campaignId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
 
   const [ownerId, setOwnerId] = useState(null);
   const [players, setPlayers] = useState([]);
@@ -78,7 +84,7 @@ const CampaignPlayersPage = () => {
   const [showInvite, setShowInvite] = useState(false);
   const [kicking, setKicking] = useState(null);
 
-  const isGM = ownerId === CURRENT_USER_ID;
+  const isGM = ownerId === currentUserId;
 
   useEffect(() => {
     setLoading(true);
@@ -127,7 +133,7 @@ const CampaignPlayersPage = () => {
       <div className="cp-players-list" role="list">
         {players.map((player) => {
           const isOwner = player.id === ownerId;
-          const isMe = player.id === CURRENT_USER_ID;
+          const isMe = player.id === currentUserId;
           const initials = player.displayName
             .split(" ")
             .slice(0, 2)

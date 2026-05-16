@@ -5,73 +5,60 @@ import FeatureFormPopup from "./FeatureFormPopup";
 import Button from "../common/Button";
 import "./FeaturesList.css";
 
-const FeaturesList = ({ characterId }) => {
+const FeaturesList = ({ characterId, onSave }) => {
   const [features, setFeatures] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingFeature, setEditingFeature] = useState(null);
 
-  // Cargar features al montar (simulado)
   React.useEffect(() => {
     fetchFeatures(characterId).then(setFeatures);
   }, [characterId]);
 
+  const persist = (updated) => {
+    setFeatures(updated);
+    onSave && onSave(updated);
+  };
+
   const handleRecarga = (type) => {
-    // Actualiza usos de features según tipo de descanso
-    setFeatures(prev => prev.map(f => {
+    const rechargeTarget = type === "turn" ? "PerTurn" : type === "SR" ? "SR" : "LR";
+    const updated = features.map(f => {
       const effect = f.effect;
       if (!effect) return f;
-      // Recargar si el periodo coincide
-      const rechargeTarget = type === "turn" ? "PerTurn" : type === "SR" ? "SR" : "LR";
       if (effect.recharge === rechargeTarget || effect.action?.recharge === rechargeTarget) {
-        // Resetear usos a máximo
         if (effect.uses) return { ...f, effect: { ...effect, uses: { ...effect.uses, current: effect.uses.max } } };
-        if (effect.action?.uses) {
-          return { ...f, effect: { ...effect, action: { ...effect.action, uses: { ...effect.action.uses, current: effect.action.uses.max } } } };
-        }
+        if (effect.action?.uses) return { ...f, effect: { ...effect, action: { ...effect.action, uses: { ...effect.action.uses, current: effect.action.uses.max } } } };
       }
       return f;
-    }));
+    });
+    persist(updated);
   };
 
   const handleUseFeature = (id) => {
-    setFeatures(prev => prev.map(f => {
+    const updated = features.map(f => {
       if (f.id !== id) return f;
-      // Decrementar usos si tiene
       const effect = f.effect;
-      let updated = f;
-      if (effect.uses && effect.uses.current > 0) {
-        updated = { ...f, effect: { ...effect, uses: { ...effect.uses, current: effect.uses.current - 1 } } };
-      } else if (effect.action?.uses && effect.action.uses.current > 0) {
-        updated = { ...f, effect: { ...effect, action: { ...effect.action, uses: { ...effect.action.uses, current: effect.action.uses.current - 1 } } } };
+      if (effect?.uses && effect.uses.current > 0) {
+        return { ...f, effect: { ...effect, uses: { ...effect.uses, current: effect.uses.current - 1 } } };
       }
-      return updated;
-    }));
+      if (effect?.action?.uses && effect.action.uses.current > 0) {
+        return { ...f, effect: { ...effect, action: { ...effect.action, uses: { ...effect.action.uses, current: effect.action.uses.current - 1 } } } };
+      }
+      return f;
+    });
+    persist(updated);
   };
 
   const handleSaveFeature = (featureData) => {
     const updated = editingFeature
       ? features.map(f => f.id === featureData.id ? featureData : f)
       : [...features, { ...featureData, id: featureData.id || Date.now() }];
-    setFeatures(updated);
     setShowForm(false);
     setEditingFeature(null);
-    onSave && onSave(updated);
+    persist(updated);
   };
 
   const handleDeleteFeature = (id) => {
-    const updated = features.filter(f => f.id !== id);
-    setFeatures(updated);
-    onSave && onSave(updated);
-  };
-
-  const openCreateForm = () => {
-    setEditingFeature(null);
-    setShowForm(true);
-  };
-
-  const openEditForm = (feature) => {
-    setEditingFeature(feature);
-    setShowForm(true);
+    persist(features.filter(f => f.id !== id));
   };
 
   return (
@@ -87,14 +74,14 @@ const FeaturesList = ({ characterId }) => {
           <FeatureCard
             key={f.id}
             feature={f}
-            onEdit={() => openEditForm(f)}
+            onEdit={() => { setEditingFeature(f); setShowForm(true); }}
             onDelete={() => handleDeleteFeature(f.id)}
             onUse={() => handleUseFeature(f.id)}
           />
         ))}
       </div>
       <div className="add-feature-btn">
-        <Button onClick={openCreateForm} ariaLabel="Agregar nueva feature">+</Button>
+        <Button onClick={() => { setEditingFeature(null); setShowForm(true); }} ariaLabel="Agregar nueva feature">+</Button>
       </div>
       {showForm && (
         <FeatureFormPopup

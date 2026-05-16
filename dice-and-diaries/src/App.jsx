@@ -1,9 +1,11 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import './styles/colors.css';
-import './styles/theme.css';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Header from "./components/common/Header";
+import NotFoundPage from "./pages/NotFoundPage";
+
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import CampaignsPage from "./pages/CampaignsPage";
@@ -18,6 +20,15 @@ import CampaignNotesPage from "./pages/CampaignNotesPage";
 import CampaignPlayersPage from "./pages/CampaignPlayersPage";
 
 import "./App.css";
+import './styles/colors.css';
+import './styles/theme.css';
+
+// Redirects to /login when not authenticated
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? children : <Navigate to="/login" replace />;
+}
 
 function AppContent() {
   const location = useLocation();
@@ -25,22 +36,34 @@ function AppContent() {
 
   return (
     <>
+      {!isLoginPage && (
+        <a href="#main-content" className="skip-link">
+          Saltar al contenido principal
+        </a>
+      )}
       {!isLoginPage && <Header />}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} /> 
-        <Route path="/campaigns" element={<CampaignsPage />} />
-        <Route path="/campaigns/:campaignId/chat" element={<ChatPage />} />
-        <Route path="/characters" element={<CharactersPage />} />
-        <Route path="/characters/:id" element={<CharacterSheetPage />} />
-        <Route path="/creatures" element={<CreaturesPage />} />
-        <Route path="/creatures/folder/:folderId" element={<CreaturesPage />} />
-        <Route path="/creatures/:creatureId" element={<CreatureSheetPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/calendar" element={<PlannerPage />} />
-        <Route path="/campaigns/:campaignId/notes" element={<CampaignNotesPage />} />
-        <Route path="/campaigns/:campaignId/players" element={<CampaignPlayersPage />} />
-      </Routes>
+      <div id="main-content">
+      <ErrorBoundary key={location.pathname}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+
+          <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
+          <Route path="/campaigns" element={<PrivateRoute><CampaignsPage /></PrivateRoute>} />
+          <Route path="/campaigns/:campaignId/chat" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+          <Route path="/campaigns/:campaignId/notes" element={<PrivateRoute><CampaignNotesPage /></PrivateRoute>} />
+          <Route path="/campaigns/:campaignId/players" element={<PrivateRoute><CampaignPlayersPage /></PrivateRoute>} />
+          <Route path="/characters" element={<PrivateRoute><CharactersPage /></PrivateRoute>} />
+          <Route path="/characters/:id" element={<PrivateRoute><CharacterSheetPage /></PrivateRoute>} />
+          <Route path="/creatures" element={<PrivateRoute><CreaturesPage /></PrivateRoute>} />
+          <Route path="/creatures/folder/:folderId" element={<PrivateRoute><CreaturesPage /></PrivateRoute>} />
+          <Route path="/creatures/:creatureId" element={<PrivateRoute><CreatureSheetPage /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+          <Route path="/calendar" element={<PrivateRoute><PlannerPage /></PrivateRoute>} />
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </ErrorBoundary>
+      </div>
     </>
   );
 }
@@ -48,7 +71,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

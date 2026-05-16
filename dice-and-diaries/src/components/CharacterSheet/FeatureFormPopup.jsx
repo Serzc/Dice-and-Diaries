@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "../common/Popup.css";
 import "./FeatureFormPopup.css";
 
@@ -44,6 +45,8 @@ const ActionSubform = ({ type, data, onChange }) => {
 };
 
 const FeatureFormPopup = ({ feature, onSave, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [name, setName] = useState(feature?.name || "");
   const [description, setDescription] = useState(feature?.description || "");
   const [effect, setEffect] = useState(feature?.effect || emptyEffect);
@@ -67,10 +70,13 @@ const FeatureFormPopup = ({ feature, onSave, onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de habilidad">
-      <div className="popup-content feature-popup" onClick={e => e.stopPropagation()}>
+    <div className="popup-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="feature-popup-title"
+         onKeyDown={(e) => e.key === "Escape" && onClose()}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popup-content feature-popup" ref={contentRef}>
         <div className="popup-header">
-          <h3 className="popup-title">{feature ? "Editar Habilidad" : "Nueva Habilidad"}</h3>
+          <h2 id="feature-popup-title" className="popup-title">{feature ? "Editar Habilidad" : "Nueva Habilidad"}</h2>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

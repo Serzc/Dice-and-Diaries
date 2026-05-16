@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "../common/Popup.css";
 import "./SpellFormPopup.css";
 
@@ -13,6 +14,8 @@ const defaultSpell = {
 };
 
 const SpellFormPopup = ({ spell, onSave, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const [form, setForm] = useState(spell || defaultSpell);
 
   useEffect(() => {
@@ -29,10 +32,13 @@ const SpellFormPopup = ({ spell, onSave, onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Formulario de hechizo">
-      <div className="popup-content spell-popup" onClick={e => e.stopPropagation()}>
+    <div className="popup-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="spell-popup-title"
+         onKeyDown={(e) => e.key === "Escape" && onClose()}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popup-content spell-popup" ref={contentRef}>
         <div className="popup-header">
-          <h3 className="popup-title">{spell ? "Editar Hechizo" : "Nuevo Hechizo"}</h3>
+          <h2 id="spell-popup-title" className="popup-title">{spell ? "Editar Hechizo" : "Nuevo Hechizo"}</h2>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

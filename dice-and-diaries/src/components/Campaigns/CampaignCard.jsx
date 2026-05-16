@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import "./CampaignCard.css";
 
-const CampaignCard = ({ campaign, isGM }) => {
+const CampaignCard = ({ campaign, isGM, onStartSession, onDelete, onNotesClick }) => {
   const navigate = useNavigate();
 
   return (
@@ -22,7 +22,7 @@ const CampaignCard = ({ campaign, isGM }) => {
         <div className="campaign-nav-buttons" role="group" aria-label="Acciones de campaña">
           <button
             className="campaign-nav-btn"
-            onClick={() => navigate(`/campaigns/${campaign.id}/notes`)}
+            onClick={() => onNotesClick ? onNotesClick() : navigate(`/campaigns/${campaign.id}/notes`)}
             aria-label={`Notas de ${campaign.name}`}
           >
             Notas
@@ -50,6 +50,13 @@ const CampaignCard = ({ campaign, isGM }) => {
               >
                 Jugadores
               </button>
+              <button
+                className="campaign-nav-btn campaign-nav-btn--danger"
+                onClick={() => onDelete && onDelete(campaign.id)}
+                aria-label={`Eliminar ${campaign.name}`}
+              >
+                Eliminar
+              </button>
             </>
           )}
         </div>
@@ -58,7 +65,7 @@ const CampaignCard = ({ campaign, isGM }) => {
         {isGM ? (
           <button
             className="btn-start-session"
-            onClick={() => navigate(`/campaigns/${campaign.id}/chat`)}
+            onClick={() => onStartSession ? onStartSession(campaign.id) : navigate(`/campaigns/${campaign.id}/chat`)}
             aria-label={`Iniciar sesión de ${campaign.name}`}
           >
             Empezar Sesión

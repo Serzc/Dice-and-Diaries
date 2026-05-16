@@ -9,12 +9,20 @@ const _sim = (ms = 150) => new Promise(r => setTimeout(r, ms));
 const _clone = obj => JSON.parse(JSON.stringify(obj));
 
 // ============ CURRENT USER ============
-const CURRENT_USER_ID = 1;
+let CURRENT_USER_ID = 1;
 export function getCurrentUserId() { return CURRENT_USER_ID; }
+
+// Called by AuthContext after login/logout to keep mock in sync
+export function setCurrentUser({ id, isGM }) {
+  CURRENT_USER_ID = id ?? 1;
+  currentUser.id  = CURRENT_USER_ID;
+  // If isGM not stored in session, fall back to user record
+  currentUser.isGM = isGM !== undefined ? isGM : (_users[CURRENT_USER_ID]?.isGM ?? false);
+}
 
 // ============ USERS ============
 const _users = {
-  1:  { id: 1,  username: "GM_Dave",       displayName: "David García",     email: "david@example.com",   bio: "Game Master apasionado por la narrativa y los mundos de fantasía. Llevo 5 años dirigiendo campañas.", avatarUrl: null, joinedAt: "2024-08-01",  password: "gm123"    },
+  1:  { id: 1,  username: "GM_Dave",       displayName: "David García",     email: "david@example.com",   bio: "Game Master apasionado por la narrativa y los mundos de fantasía. Llevo 5 años dirigiendo campañas.", avatarUrl: null, joinedAt: "2024-08-01",  password: "gm123",   isGM: true },
   2:  { id: 2,  username: "Player_Anna",   displayName: "Ana Martínez",     email: "anna@example.com",    bio: "Jugadora entusiasta de D&D desde hace 3 años.",  avatarUrl: null, joinedAt: "2024-09-15", password: "anna123"  },
   3:  { id: 3,  username: "Player_Ben",    displayName: "Benjamín Torres",  email: "ben@example.com",     bio: "",                                               avatarUrl: null, joinedAt: "2025-01-03", password: "ben123"   },
   4:  { id: 4,  username: "Player_Cris",   displayName: "Cristina López",   email: "cris@example.com",    bio: "",                                               avatarUrl: null, joinedAt: "2025-02-11", password: "cris123"  },
@@ -28,10 +36,11 @@ const _users = {
 
 // ============ CAMPAIGNS ============
 let _campaigns = [
-  { id: 1, name: "Campaña 1: Las Minas Perdidas",          ownerId: 1, active: true,  imageUrl: null },
-  { id: 2, name: "Campaña 2: La Maldición de Strahd",      ownerId: 1, active: false, imageUrl: null },
-  { id: 3, name: "Campaña 3: La Tumba de la Aniquilación", ownerId: 2, active: true,  imageUrl: null },
+  { id: 1, name: "Campaña 1: Las Minas Perdidas",          ownerId: 1, active: true,  imageUrl: null, inviteCode: "MINE01" },
+  { id: 2, name: "Campaña 2: La Maldición de Strahd",      ownerId: 1, active: false, imageUrl: null, inviteCode: "VAMP01" },
+  { id: 3, name: "Campaña 3: La Tumba de la Aniquilación", ownerId: 2, active: true,  imageUrl: null, inviteCode: "JNGL01" },
 ];
+let _nextCampaignId = 4;
 
 const _campaignMembers = {
   1: { ownerId: 1, playerIds: [1, 2, 3, 4] },
@@ -217,6 +226,7 @@ let _nextSpellId = 400;
 // ============ CREATURES ============
 function _mod(score) { return Math.floor((score - 10) / 2); }
 export function fmtMod(score) { const m = _mod(score); return m >= 0 ? `+${m}` : `${m}`; }
+// Mutable singleton — updated via setCurrentUser() on login/logout
 export const currentUser = { id: CURRENT_USER_ID, isGM: true };
 
 let _folders = [
@@ -443,6 +453,44 @@ export async function fetchHomeData(userId = CURRENT_USER_ID) {
   };
 }
 
+export async function createCampaign({ name, description = "" }) {
+  await _sim(300);
+  const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+  const newCamp = {
+    id: _nextCampaignId++, name, description,
+    ownerId: CURRENT_USER_ID, active: false, imageUrl: null, inviteCode: code,
+  };
+  _campaigns.push(newCamp);
+  _campaignMembers[newCamp.id] = { ownerId: CURRENT_USER_ID, playerIds: [CURRENT_USER_ID] };
+  return _clone(newCamp);
+}
+
+export async function joinCampaignByCode(code) {
+  await _sim(300);
+  const camp = _campaigns.find(c => c.inviteCode?.toUpperCase() === code.trim().toUpperCase());
+  if (!camp) throw new Error(`Código "${code}" no encontrado.`);
+  const members = _campaignMembers[camp.id];
+  if (members && !members.playerIds.includes(CURRENT_USER_ID)) {
+    members.playerIds.push(CURRENT_USER_ID);
+  }
+  return _clone(camp);
+}
+
+export async function toggleCampaignActive(campaignId) {
+  await _sim(150);
+  const camp = _campaigns.find(c => c.id === Number(campaignId));
+  if (!camp) throw new Error("Campaña no encontrada.");
+  camp.active = !camp.active;
+  return _clone(camp);
+}
+
+export async function deleteCampaign(campaignId) {
+  await _sim(200);
+  const idx = _campaigns.findIndex(c => c.id === Number(campaignId));
+  if (idx !== -1) _campaigns.splice(idx, 1);
+  return { success: true };
+}
+
 // ============ PLAYER FUNCTIONS ============
 export async function fetchCampaignPlayers(campaignId) {
   await _sim();
@@ -636,6 +684,58 @@ export async function createFolder(name, parentId = null) {
   return { ...newFolder };
 }
 
+// ============ CREATURE NOTE FUNCTIONS ============
+let _creatureNotes = [
+  { id: "cn1", creatureId: "c1", title: "Tácticas de combate", content: "Usa Escape Nimble para retirarse cuando tiene desventaja. Prefiere atacar en grupo desde la oscuridad.", visibility: "gm", authorId: 1, createdAt: "2024-10-01" },
+  { id: "cn2", creatureId: "c1", title: "Descripción para jugadores", content: "Una criatura pequeña y escurridiza con ojos que brillan en la oscuridad y dientes muy afilados.", visibility: "players_view", authorId: 1, createdAt: "2024-10-01" },
+  { id: "cn3", creatureId: "c4", title: "Origen del esqueleto", content: "Animado por el nigromante que habita la cripta norte. Obedece su voluntad ciegamente.", visibility: "gm", authorId: 1, createdAt: "2024-11-01" },
+  { id: "cn4", creatureId: "c4", title: "Lo que los aventureros saben", content: "Se mueven sin descanso y no sienten dolor. Atacar el cráneo parece la forma más efectiva.", visibility: "players_edit", authorId: 1, createdAt: "2024-11-01" },
+];
+let _nextCreatureNoteId = 5;
+
+export async function fetchCreatureNotes(creatureId) {
+  await _sim();
+  return _clone(_creatureNotes.filter(n => n.creatureId === creatureId));
+}
+
+export async function createCreatureNote(data) {
+  await _sim(200);
+  const note = { id: `cn${_nextCreatureNoteId++}`, ...data, createdAt: new Date().toISOString().split("T")[0] };
+  _creatureNotes.push(note);
+  return _clone(note);
+}
+
+export async function updateCreatureNote(id, data) {
+  await _sim(200);
+  const idx = _creatureNotes.findIndex(n => n.id === id);
+  if (idx === -1) throw new Error("Nota no encontrada");
+  _creatureNotes[idx] = { ..._creatureNotes[idx], ...data };
+  return _clone(_creatureNotes[idx]);
+}
+
+export async function deleteCreatureNote(id) {
+  await _sim(150);
+  _creatureNotes = _creatureNotes.filter(n => n.id !== id);
+}
+
+export async function addCreatureToCampaign(creatureId, campaignId) {
+  await _sim();
+  const idx = _creatures.findIndex(c => c.id === creatureId);
+  if (idx === -1) throw new Error("Criatura no encontrada");
+  if (!_creatures[idx].campaignIds.includes(campaignId)) {
+    _creatures[idx] = { ..._creatures[idx], campaignIds: [..._creatures[idx].campaignIds, campaignId] };
+  }
+  return _clone(_creatures[idx]);
+}
+
+export async function removeCreatureFromCampaign(creatureId, campaignId) {
+  await _sim();
+  const idx = _creatures.findIndex(c => c.id === creatureId);
+  if (idx === -1) throw new Error("Criatura no encontrada");
+  _creatures[idx] = { ..._creatures[idx], campaignIds: _creatures[idx].campaignIds.filter(id => id !== campaignId) };
+  return _clone(_creatures[idx]);
+}
+
 // ============ NOTE FUNCTIONS ============
 export async function fetchCampaignNotes(campaignId, isGM) {
   await _sim();
@@ -745,11 +845,11 @@ export async function fetchProfile(userId = CURRENT_USER_ID) {
   };
 }
 
-export async function saveProfile(data) {
+export async function saveProfile(data, userId = CURRENT_USER_ID) {
   await _sim(200);
   const { stats: _s, password: _p, ...editable } = data;
-  Object.assign(_users[CURRENT_USER_ID], editable);
-  return fetchProfile(CURRENT_USER_ID);
+  Object.assign(_users[userId], editable);
+  return fetchProfile(userId);
 }
 
 // ============ PLANNER FUNCTIONS ============

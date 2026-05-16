@@ -1,15 +1,16 @@
 // src/pages/CampaignNotesPage.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchCampaignNotes, createNote, updateNote, deleteNote } from "../mock/db";
+import { useAuth } from "../context/AuthContext";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import "../components/common/Popup.css";
 import "./CampaignNotesPage.css";
 
-const CURRENT_USER_ID = 1;
-const IS_GM = true; // In real app: derived from auth + campaign
-
 // ── Note edit popup ───────────────────────────────────────────────────────────
-const NotePopup = ({ note, campaignId, onClose, onSaved }) => {
+const NotePopup = ({ note, campaignId, isGM, currentUserId, onClose, onSaved }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
   const isNew = !note;
   const [form, setForm] = useState({
     title: note?.title ?? "",
@@ -31,7 +32,7 @@ const NotePopup = ({ note, campaignId, onClose, onSaved }) => {
         title: form.title.trim(),
         content: form.content.trim(),
         isPublic: form.isPublic,
-        authorId: CURRENT_USER_ID,
+        authorId: currentUserId,
         createdAt: new Date().toISOString().split("T")[0],
       });
     } else {
@@ -50,12 +51,14 @@ const NotePopup = ({ note, campaignId, onClose, onSaved }) => {
       className="popup-overlay"
       role="dialog"
       aria-modal="true"
+      aria-labelledby="note-popup-title"
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="popup-content" style={{ maxWidth: "520px" }}>
+      <div className="popup-content" style={{ maxWidth: "520px" }} ref={contentRef}>
         <form onSubmit={handleSubmit}>
           <div className="popup-header">
-            <h2 className="popup-title">{isNew ? "Nueva Nota" : "Editar Nota"}</h2>
+            <h2 id="note-popup-title" className="popup-title">{isNew ? "Nueva Nota" : "Editar Nota"}</h2>
             <button type="button" className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
           </div>
           <div className="popup-body">
@@ -79,7 +82,7 @@ const NotePopup = ({ note, campaignId, onClose, onSaved }) => {
                 placeholder="Escribe el contenido de la nota..."
               />
             </div>
-            {IS_GM && (
+            {isGM && (
               <label className="checkbox-label">
                 <input
                   type="checkbox"
@@ -103,16 +106,21 @@ const NotePopup = ({ note, campaignId, onClose, onSaved }) => {
 };
 
 // ── Confirm delete popup ──────────────────────────────────────────────────────
-const ConfirmDeletePopup = ({ note, onConfirm, onClose }) => (
+const ConfirmDeletePopup = ({ note, onConfirm, onClose }) => {
+  const contentRef = useRef(null);
+  useFocusTrap(contentRef);
+  return (
   <div
     className="popup-overlay"
     role="dialog"
     aria-modal="true"
+    aria-labelledby="confirm-delete-title"
+    onKeyDown={(e) => e.key === "Escape" && onClose()}
     onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
   >
-    <div className="popup-content" style={{ maxWidth: "380px" }}>
+    <div className="popup-content" style={{ maxWidth: "380px" }} ref={contentRef}>
       <div className="popup-header">
-        <h2 className="popup-title">Eliminar nota</h2>
+        <h2 id="confirm-delete-title" className="popup-title">Eliminar nota</h2>
         <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
       </div>
       <div className="popup-body">
@@ -126,14 +134,18 @@ const ConfirmDeletePopup = ({ note, onConfirm, onClose }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 const CampaignNotesPage = () => {
   const { campaignId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
 
   const [campaign, setCampaign] = useState(null);
+  const [isGM, setIsGM] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingNote, setEditingNote] = useState(undefined); // undefined=closed, null=new, note=edit
@@ -141,13 +153,16 @@ const CampaignNotesPage = () => {
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
+    if (currentUserId == null) return;
     setLoading(true);
-    fetchCampaignNotes(campaignId, IS_GM).then(({ campaign, notes }) => {
+    fetchCampaignNotes(campaignId, true).then(({ campaign, notes }) => {
       setCampaign(campaign);
-      setNotes(notes);
+      const gm = campaign?.ownerId === currentUserId;
+      setIsGM(gm);
+      setNotes(gm ? notes : notes.filter(n => n.isPublic));
       setLoading(false);
     });
-  }, [campaignId]);
+  }, [campaignId, currentUserId]);
 
   const handleSaved = useCallback((saved, isNew) => {
     setNotes((prev) =>
@@ -182,7 +197,7 @@ const CampaignNotesPage = () => {
 
       {notes.length === 0 ? (
         <p className="cn-empty">
-          {IS_GM
+          {isGM
             ? "No hay notas en esta campaña. Usa el botón + para crear una."
             : "No hay notas públicas en esta campaña."}
         </p>
@@ -210,7 +225,7 @@ const CampaignNotesPage = () => {
               {expandedId === note.id && (
                 <div className="cn-note-body">
                   <p className="cn-note-content">{note.content}</p>
-                  {IS_GM && (
+                  {isGM && (
                     <div className="cn-note-actions">
                       <button className="cn-action-btn" onClick={() => setEditingNote(note)}>
                         Editar
@@ -228,7 +243,7 @@ const CampaignNotesPage = () => {
       )}
 
       {/* FAB */}
-      {IS_GM && (
+      {isGM && (
         <button
           className="cn-fab"
           aria-label="Crear nueva nota"
@@ -244,6 +259,8 @@ const CampaignNotesPage = () => {
         <NotePopup
           note={editingNote}
           campaignId={campaignId}
+          isGM={isGM}
+          currentUserId={currentUserId}
           onClose={() => setEditingNote(undefined)}
           onSaved={handleSaved}
         />

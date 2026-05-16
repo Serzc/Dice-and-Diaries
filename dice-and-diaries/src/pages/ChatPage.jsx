@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { fetchChatData, sendMessage as sendMessageApi } from "../mock/db";
+import { useParams, useSearchParams } from "react-router-dom";
+import { fetchChatData, fetchCampaignNotes, sendMessage as sendMessageApi } from "../mock/db";
 import ChatMessage from "../components/Chat/ChatMessage";
 import ChatInput from "../components/Chat/ChatInput";
 import ChatSidebar from "../components/Chat/ChatSidebar";
@@ -8,10 +8,17 @@ import "./ChatPage.css";
 
 const ChatPage = () => {
   const { campaignId } = useParams();
+  const [searchParams] = useSearchParams();
   const [chatData, setChatData] = useState(null);
   const [messages, setMessages] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [possessedNPC, setPossessedNPC] = useState(null);
+  const [notes, setNotes] = useState([]);
+  const [possessedNPC, setPossessedNPC] = useState(() => {
+    const characterId = searchParams.get("characterId");
+    const characterName = searchParams.get("characterName");
+    if (characterId && characterName) return { id: characterId, name: characterName, avatar: null };
+    return null;
+  });
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -19,6 +26,8 @@ const ChatPage = () => {
       const data = await fetchChatData(campaignId);
       setChatData(data);
       setMessages(data.messages);
+      const notesData = await fetchCampaignNotes(campaignId, data.currentUser.isGM);
+      setNotes(notesData.notes || []);
     };
     load();
   }, [campaignId]);
@@ -126,13 +135,16 @@ const ChatPage = () => {
         <ChatSidebar
           isGM={chatData.currentUser.isGM}
           characters={chatData.userCharacters}
-          notes={[]} // Pasar notas reales si las tienes
+          notes={notes}
           onlineUsers={chatData.onlineUsers}
           npcs={chatData.npcs}
+          campaignId={Number(campaignId)}
+          currentUserId={chatData.currentUser.id}
           onSendDiceRoll={handleSendDiceRoll}
           onSendWhisper={handleSendWhisper}
           onSendNoteAppend={handleSendNoteAppend}
           onSendAbilityAppend={handleSendAbilityAppend}
+          onNoteCreated={(note) => setNotes((prev) => [note, ...prev])}
           onPossessNPC={setPossessedNPC}
         />
       )}
