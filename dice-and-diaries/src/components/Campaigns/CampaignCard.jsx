@@ -64,11 +64,11 @@ const CampaignCard = ({ campaign, isGM, onStartSession, onDelete, onNotesClick }
         {/* Primary action: GM gets start-session, player gets status */}
         {isGM ? (
           <button
-            className="btn-start-session"
-            onClick={() => onStartSession ? onStartSession(campaign.id) : navigate(`/campaigns/${campaign.id}/chat`)}
-            aria-label={`Iniciar sesión de ${campaign.name}`}
+            className={`btn-start-session${campaign.active ? " btn-end-session" : ""}`}
+            onClick={() => onStartSession ? onStartSession(campaign.id, campaign.active) : navigate(`/campaigns/${campaign.id}/chat`)}
+            aria-label={campaign.active ? `Terminar sesión de ${campaign.name}` : `Iniciar sesión de ${campaign.name}`}
           >
-            Empezar Sesión
+            {campaign.active ? "Terminar Sesión" : "Empezar Sesión"}
           </button>
         ) : (
           <span className="session-status">

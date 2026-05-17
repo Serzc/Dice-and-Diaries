@@ -4,7 +4,7 @@ import "./CombatInfoSection.css";
 
 const DEFAULT_DEATH_SAVES = { successes: [false, false, false], failures: [false, false, false] };
 
-const CombatInfoSection = ({ combatInfo, onSave }) => {
+const CombatInfoSection = ({ combatInfo, onSave, onRest }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [edited,    setEdited]    = useState({ ...combatInfo });
   const [deathSaves, setDeathSaves] = useState(combatInfo.deathSaves ?? DEFAULT_DEATH_SAVES);
@@ -41,7 +41,7 @@ const CombatInfoSection = ({ combatInfo, onSave }) => {
 
   return (
     <section className="sheet-section combat-section" aria-labelledby="combat-heading">
-      <h3 id="combat-heading">Combat Info</h3>
+      <h3 id="combat-heading">Combate</h3>
       <div className="combat-grid">
         <div className="combat-item">
           <label>AC</label>
@@ -94,21 +94,42 @@ const CombatInfoSection = ({ combatInfo, onSave }) => {
         {/* Hit Dice */}
         <div className="combat-item combat-item--wide">
           <label>Hit Dice</label>
-          <div className="hit-dice-row">
-            <span className="combat-value">
-              {combatInfo.hitDiceType} — {combatInfo.hitDiceRemaining}/{combatInfo.hitDiceTotal}
-            </span>
-            {combatInfo.hitDiceRemaining > 0 && (
-              <button
-                className="hit-die-use-btn"
-                onClick={handleUseHitDie}
-                aria-label="Usar dado de golpe"
-                title="Usar dado de golpe (gasta 1 restante)"
+          {isEditing ? (
+            <div className="hit-dice-edit-row">
+              <input
+                type="number" min="1" max="30"
+                value={edited.hitDiceTotal}
+                onChange={e => handleChange("hitDiceTotal", parseInt(e.target.value) || 1)}
+                style={{ width: "3rem" }}
+                aria-label="Total de dados de golpe"
+              />
+              <select
+                value={edited.hitDiceType}
+                onChange={e => handleChange("hitDiceType", e.target.value)}
+                aria-label="Tipo de dado de golpe"
               >
-                Usar
-              </button>
-            )}
-          </div>
+                {["d4","d6","d8","d10","d12","d20"].map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="hit-dice-row">
+              <span className="combat-value">
+                {combatInfo.hitDiceType} — {combatInfo.hitDiceRemaining}/{combatInfo.hitDiceTotal}
+              </span>
+              {combatInfo.hitDiceRemaining > 0 && (
+                <button
+                  className="hit-die-use-btn"
+                  onClick={handleUseHitDie}
+                  aria-label="Usar dado de golpe"
+                  title="Usar dado de golpe (gasta 1 restante)"
+                >
+                  Usar
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -142,6 +163,13 @@ const CombatInfoSection = ({ combatInfo, onSave }) => {
           </div>
         </div>
       )}
+
+      {/* Rest buttons */}
+      <div className="rest-buttons">
+        <button className="rest-btn rest-btn--turn" onClick={() => onRest && onRest("turn")}>Turno</button>
+        <button className="rest-btn rest-btn--short" onClick={() => onRest && onRest("SR")}>Desc. Corto</button>
+        <button className="rest-btn rest-btn--long"  onClick={() => onRest && onRest("LR")}>Desc. Largo</button>
+      </div>
 
       <Button
         onClick={handleEditToggle}

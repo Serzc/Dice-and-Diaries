@@ -103,12 +103,12 @@ const CampaignsPage = () => {
     setCampaigns((prev) => [camp, ...prev]);
   };
 
-  const handleStartSession = async (campaignId) => {
+  const handleStartSession = async (campaignId, isActive) => {
     try {
       const updated = await toggleCampaignActive(campaignId);
       setCampaigns((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
     } catch (e) { /* ignore */ }
-    navigate(`/campaigns/${campaignId}/chat`);
+    if (!isActive) navigate(`/campaigns/${campaignId}/chat`);
   };
 
   const handleDelete = async (campaignId) => {

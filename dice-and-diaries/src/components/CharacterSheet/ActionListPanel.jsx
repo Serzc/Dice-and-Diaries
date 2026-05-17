@@ -4,7 +4,7 @@ import ActionFormPopup from "./ActionFormPopup";
 import Button from "../common/Button";
 import "./ActionsPanel.css"; // mismo CSS
 
-const ActionListPanel = ({ title, type, characterId, fetchData, onSave }) => {
+const ActionListPanel = ({ title, type, characterId, fetchData, onSave, restTrigger }) => {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -12,6 +12,23 @@ const ActionListPanel = ({ title, type, characterId, fetchData, onSave }) => {
   useEffect(() => {
     fetchData(characterId).then(setItems);
   }, [characterId, fetchData]);
+
+  // Recharge uses on rest
+  useEffect(() => {
+    if (!restTrigger?.type || !restTrigger.count) return;
+    const restType = restTrigger.type;
+    const targets = restType === "LR" ? ["PerTurn", "SR", "LR"] : restType === "SR" ? ["PerTurn", "SR"] : ["PerTurn"];
+    setItems(prev => {
+      const updated = prev.map(item => {
+        if (!item.recharge || !targets.includes(item.recharge)) return item;
+        if (item.uses) return { ...item, uses: { ...item.uses, current: item.uses.max } };
+        return item;
+      });
+      const changed = updated.some((u, i) => u !== prev[i]);
+      if (changed) onSave && onSave(updated);
+      return updated;
+    });
+  }, [restTrigger?.count]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUse = (id) => {
     setItems(prev => prev.map(item => {

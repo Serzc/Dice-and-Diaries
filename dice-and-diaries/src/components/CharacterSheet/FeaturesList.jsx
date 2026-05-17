@@ -5,7 +5,7 @@ import FeatureFormPopup from "./FeatureFormPopup";
 import Button from "../common/Button";
 import "./FeaturesList.css";
 
-const FeaturesList = ({ characterId, onSave }) => {
+const FeaturesList = ({ characterId, onSave, restTrigger }) => {
   const [features, setFeatures] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingFeature, setEditingFeature] = useState(null);
@@ -19,19 +19,25 @@ const FeaturesList = ({ characterId, onSave }) => {
     onSave && onSave(updated);
   };
 
-  const handleRecarga = (type) => {
-    const rechargeTarget = type === "turn" ? "PerTurn" : type === "SR" ? "SR" : "LR";
-    const updated = features.map(f => {
-      const effect = f.effect;
-      if (!effect) return f;
-      if (effect.recharge === rechargeTarget || effect.action?.recharge === rechargeTarget) {
+  // Respond to rest triggers from CombatInfoSection
+  React.useEffect(() => {
+    if (!restTrigger?.type || !restTrigger.count) return;
+    const type = restTrigger.type;
+    const targets = type === "LR" ? ["PerTurn", "SR", "LR"] : type === "SR" ? ["PerTurn", "SR"] : ["PerTurn"];
+    setFeatures(prev => {
+      const updated = prev.map(f => {
+        const effect = f.effect;
+        if (!effect) return f;
+        const recharge = effect.recharge || effect.action?.recharge;
+        if (!targets.includes(recharge)) return f;
         if (effect.uses) return { ...f, effect: { ...effect, uses: { ...effect.uses, current: effect.uses.max } } };
         if (effect.action?.uses) return { ...f, effect: { ...effect, action: { ...effect.action, uses: { ...effect.action.uses, current: effect.action.uses.max } } } };
-      }
-      return f;
+        return f;
+      });
+      onSave && onSave(updated);
+      return updated;
     });
-    persist(updated);
-  };
+  }, [restTrigger?.count]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUseFeature = (id) => {
     const updated = features.map(f => {
@@ -63,12 +69,7 @@ const FeaturesList = ({ characterId, onSave }) => {
 
   return (
     <section className="features-section" aria-labelledby="features-heading">
-      <h3 id="features-heading">Features</h3>
-      <div className="recarga-buttons">
-        <Button onClick={() => handleRecarga("turn")} ariaLabel="Recargar turno">Turno</Button>
-        <Button onClick={() => handleRecarga("SR")} ariaLabel="Descanso Corto">Descanso Corto</Button>
-        <Button onClick={() => handleRecarga("LR")} ariaLabel="Descanso Largo">Descanso Largo</Button>
-      </div>
+      <h3 id="features-heading">Cualidades</h3>
       <div className="features-list">
         {features.map(f => (
           <FeatureCard

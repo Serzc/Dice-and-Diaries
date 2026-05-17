@@ -4,11 +4,35 @@ import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import CharacterNotesPopup from "./CharacterNotesPopup";
+import { fetchCampaigns, addCharacterToCampaign, getCurrentUserId } from "../../mock/db";
+import "../common/Popup.css";
 import "./CharacterCard.css";
 
-const CharacterCard = ({ character }) => {
+const CharacterCard = ({ character, onUpdated }) => {
   const navigate = useNavigate();
-  const [showNotes, setShowNotes] = useState(false);
+  const [showNotes,    setShowNotes]    = useState(false);
+  const [showCampaign, setShowCampaign] = useState(false);
+  const [campaigns,    setCampaigns]    = useState([]);
+  const [linking,      setLinking]      = useState(false);
+  const [linked,       setLinked]       = useState(new Set((character.campaigns || []).map(c => c.id)));
+
+  const openCampaignPicker = async () => {
+    const data = await fetchCampaigns(getCurrentUserId());
+    setCampaigns(data);
+    setShowCampaign(true);
+  };
+
+  const handleToggleCampaign = async (campaignId) => {
+    setLinking(true);
+    if (linked.has(campaignId)) {
+      // keep linked; removing is done from character sheet / campaign view
+    } else {
+      await addCharacterToCampaign(character.id, campaignId);
+      setLinked(prev => new Set([...prev, campaignId]));
+      onUpdated && onUpdated();
+    }
+    setLinking(false);
+  };
 
   const handleCardClick = () => {
     navigate(`/characters/${character.id}`);
@@ -76,15 +100,20 @@ const CharacterCard = ({ character }) => {
             </div>
           </div>
 
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowNotes(true);
-            }}
-            ariaLabel={`Ver notas de campañas de ${character.name}`}
-          >
-            📋 Mis Notas
-          </Button>
+          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+            <Button
+              onClick={(e) => { e.stopPropagation(); setShowNotes(true); }}
+              ariaLabel={`Ver notas de campañas de ${character.name}`}
+            >
+              📋 Mis Notas
+            </Button>
+            <Button
+              onClick={(e) => { e.stopPropagation(); openCampaignPicker(); }}
+              ariaLabel={`Añadir ${character.name} a una campaña`}
+            >
+              ⚔ Campaña
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -94,6 +123,49 @@ const CharacterCard = ({ character }) => {
           characterId={character.id}
           onClose={() => setShowNotes(false)}
         />
+      )}
+
+      {showCampaign && (
+        <div className="popup-overlay" onClick={() => setShowCampaign(false)} role="dialog" aria-modal="true" aria-label="Añadir a campaña">
+          <div className="popup-content" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
+            <div className="popup-header">
+              <h3 className="popup-title">Añadir a campaña</h3>
+              <button className="popup-close-btn" onClick={() => setShowCampaign(false)} aria-label="Cerrar">✕</button>
+            </div>
+            <div className="popup-body">
+              {campaigns.length === 0 ? (
+                <p style={{ color: "var(--color-text-secondary)", fontSize: "0.88rem" }}>No tienes campañas disponibles.</p>
+              ) : (
+                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  {campaigns.map(camp => {
+                    const isLinked = linked.has(camp.id);
+                    return (
+                      <li key={camp.id}>
+                        <button
+                          onClick={() => handleToggleCampaign(camp.id)}
+                          disabled={linking || isLinked}
+                          style={{
+                            width: "100%", textAlign: "left", padding: "0.5rem 0.75rem",
+                            borderRadius: "var(--radius-sm)", cursor: isLinked ? "default" : "pointer",
+                            border: `1.5px solid ${isLinked ? "var(--color-primary)" : "var(--color-gray-300)"}`,
+                            background: isLinked ? "var(--color-primary-bg)" : "transparent",
+                            color: isLinked ? "var(--color-primary)" : "var(--color-text-primary)",
+                            fontWeight: 600, fontSize: "0.88rem",
+                          }}
+                        >
+                          {camp.name}{isLinked ? " ✓" : ""}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+            <div className="popup-footer">
+              <button className="primary-button" onClick={() => setShowCampaign(false)}>Listo</button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

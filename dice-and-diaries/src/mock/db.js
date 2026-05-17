@@ -1,367 +1,70 @@
 // ========================
-// src/mock/db.js
-// Single source of truth for all mock data.
-// Function signatures match what a real API layer would expose.
-// To connect a real DB: replace implementations while keeping all exported signatures.
+// src/mock/db.js  –  Supabase backend
+// All exported signatures are identical to the original mock so no
+// page/component imports need to change.
 // ========================
+import { supabase } from "../lib/supabase";
+import { serializeSpellSlots } from "../utils/characterDataAdapter";
 
-const _sim = (ms = 150) => new Promise(r => setTimeout(r, ms));
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const _clone = obj => JSON.parse(JSON.stringify(obj));
 
-// ============ CURRENT USER ============
-let CURRENT_USER_ID = 1;
-export function getCurrentUserId() { return CURRENT_USER_ID; }
-
-// Called by AuthContext after login/logout to keep mock in sync
-export function setCurrentUser({ id, isGM }) {
-  CURRENT_USER_ID = id ?? 1;
-  currentUser.id  = CURRENT_USER_ID;
-  // If isGM not stored in session, fall back to user record
-  currentUser.isGM = isGM !== undefined ? isGM : (_users[CURRENT_USER_ID]?.isGM ?? false);
+function _parseJSON(str, fallback) {
+  if (str == null) return fallback;
+  if (typeof str !== "string") return str;
+  try { return JSON.parse(str); } catch { return fallback; }
 }
 
-// ============ USERS ============
-const _users = {
-  1:  { id: 1,  username: "GM_Dave",       displayName: "David García",     email: "david@example.com",   bio: "Game Master apasionado por la narrativa y los mundos de fantasía. Llevo 5 años dirigiendo campañas.", avatarUrl: null, joinedAt: "2024-08-01",  password: "gm123",   isGM: true },
-  2:  { id: 2,  username: "Player_Anna",   displayName: "Ana Martínez",     email: "anna@example.com",    bio: "Jugadora entusiasta de D&D desde hace 3 años.",  avatarUrl: null, joinedAt: "2024-09-15", password: "anna123"  },
-  3:  { id: 3,  username: "Player_Ben",    displayName: "Benjamín Torres",  email: "ben@example.com",     bio: "",                                               avatarUrl: null, joinedAt: "2025-01-03", password: "ben123"   },
-  4:  { id: 4,  username: "Player_Cris",   displayName: "Cristina López",   email: "cris@example.com",    bio: "",                                               avatarUrl: null, joinedAt: "2025-02-11", password: "cris123"  },
-  5:  { id: 5,  username: "Player_Dan",    displayName: "Daniel Rojas",     email: "dan@example.com",     bio: "",                                               avatarUrl: null, joinedAt: "2025-03-20", password: "dan123"   },
-  6:  { id: 6,  username: "Player_Elena",  displayName: "Elena Vega",       email: "elena@example.com",   bio: "",                                               avatarUrl: null, joinedAt: "2025-04-05", password: "elena123" },
-  7:  { id: 7,  username: "Player_Felipe", displayName: "Felipe Mora",      email: "felipe@example.com",  bio: "",                                               avatarUrl: null, joinedAt: "2025-05-01", password: "felipe123"},
-  8:  { id: 8,  username: "Player_Gabi",   displayName: "Gabriela Ruiz",    email: "gabi@example.com",    bio: "",                                               avatarUrl: null, joinedAt: "2025-05-15", password: "gabi123"  },
-  9:  { id: 9,  username: "Player_Hugo",   displayName: "Hugo Sánchez",     email: "hugo@example.com",    bio: "",                                               avatarUrl: null, joinedAt: "2025-06-01", password: "hugo123"  },
-  10: { id: 10, username: "Player_Iris",   displayName: "Iris Delgado",     email: "iris@example.com",    bio: "",                                               avatarUrl: null, joinedAt: "2025-06-10", password: "iris123"  },
-};
+function _toJSON(val) { return JSON.stringify(val ?? null); }
 
-// ============ CAMPAIGNS ============
-let _campaigns = [
-  { id: 1, name: "Campaña 1: Las Minas Perdidas",          ownerId: 1, active: true,  imageUrl: null, inviteCode: "MINE01" },
-  { id: 2, name: "Campaña 2: La Maldición de Strahd",      ownerId: 1, active: false, imageUrl: null, inviteCode: "VAMP01" },
-  { id: 3, name: "Campaña 3: La Tumba de la Aniquilación", ownerId: 2, active: true,  imageUrl: null, inviteCode: "JNGL01" },
-];
-let _nextCampaignId = 4;
+function _parseComma(str) {
+  if (!str) return [];
+  return str.split(",").map(s => s.trim()).filter(Boolean);
+}
 
-const _campaignMembers = {
-  1: { ownerId: 1, playerIds: [1, 2, 3, 4] },
-  2: { ownerId: 1, playerIds: [1, 5, 6, 7, 8] },
-  3: { ownerId: 2, playerIds: [1, 2, 9, 10] },
-};
+function _serializeComma(arr) { return (arr || []).join(", "); }
 
-// ============ CHARACTERS (DB format — matches characterDataAdapter.fromDatabase input) ============
-let _characters = [
-  {
-    id: 1, userId: 1,
-    name: "Thorn Ironwood",
-    classes: ["Ranger", "Rogue"],
-    species: "Half-Elf",
-    background: "Outlander",
-    level: 5,
-    image_url: "/images/characters/thorn.png",
-    ability_scores: { str: 14, dex: 18, con: 13, int: 10, wis: 15, cha: 8 },
-    proficiency_bonus: 3,
-    save_proficiencies: ["dex", "int"],
-    skill_proficiencies: [
-      { skill: "acrobatics", level: "proficient" },
-      { skill: "stealth", level: "expert" },
-      { skill: "perception", level: "proficient" },
-      { skill: "survival", level: "proficient" },
-      { skill: "nature", level: "proficient" },
-      { skill: "investigation", level: "proficient" },
-      { skill: "sleight_of_hand", level: "expert" },
-      { skill: "athletics", level: "proficient" },
-    ],
-    proficiency_list: [
-      { ability: "str", level: "proficient" },
-      { ability: "dex", level: "expert" },
-    ],
-    speed: 35,
-    hp: { max: 38, current: 38, temp: 0 },
-    hit_dice: { type: "d10", total: 5, remaining: 5 },
-    inventory: [
-      { id: 201, name: "Espada larga", weight: 3, quantity: 1, description: "Una hoja bien equilibrada.", equipable: true, equipped: true, effect: { damage: "1d8", type: "cortante", properties: "versátil (1d10)" } },
-      { id: 202, name: "Armadura de cuero tachonado", weight: 13, quantity: 1, description: "Tachones de metal cosidos al cuero.", equipable: true, equipped: true, effect: { ac_bonus: 2, stealth_disadvantage: false } },
-      { id: 203, name: "Poción de curación", weight: 0.5, quantity: 2, description: "Recuperas 2d4+2 puntos de vida.", equipable: false, equipped: false, effect: { heal: "2d4+2" } },
-      { id: 204, name: "Kit de ladrón", weight: 2, quantity: 1, description: "Herramientas para abrir cerraduras.", equipable: false, equipped: false, effect: null },
-    ],
-    features: [
-      { name: "Fighting Style: Defense", effect: { ac_bonus: 1 } },
-    ],
-    actions: [
-      { id: 1, name: "Ataque con arco largo",  description: "Ataque a distancia con arco largo.", recharge: "PerTurn", uses: { current: 1, max: 1 } },
-      { id: 2, name: "Golpe en la rodilla",    description: "El enemigo supera CD 14 de CON o cae derribado.", recharge: "SR", uses: { current: 1, max: 1 } },
-      { id: 3, name: "Ráfaga de puñales",      description: "Lanzas tres dagas a objetivos cercanos.", recharge: "LR", uses: { current: 1, max: 2 } },
-    ],
-    bonus_actions: [
-      { id: 4, name: "Paso sombrío",  description: "Te teletransportas 15 pies a un lugar visible.", recharge: "PerTurn", uses: { current: 1, max: 1 } },
-      { id: 5, name: "Segundo viento", description: "Recuperas 1d10 + nivel puntos de vida.",        recharge: "SR",      uses: { current: 1, max: 1 } },
-    ],
-    other_proficiencies: ["Herramientas de ladrón", "Juego de cartas", "Monturas (tierra)"],
-    stored_features: [
-      { id: 1, name: "Ataque Furtivo",     description: "Una vez por turno, +2d6 de daño si tienes ventaja o un aliado está a 5 pies.", effect: { action: { attack: { damage: "2d6", type: "piercing" }, recharge: "PerTurn", uses: { current: 1, max: 1 } } } },
-      { id: 2, name: "Furia",              description: "Ventaja en pruebas de FUE. +2 daño en ataques c·a·c.", effect: { modifiers: { ability_proficiencies: [{ ability: "str", level: "advantage" }] }, recharge: "LR", uses: { current: 3, max: 3 } } },
-      { id: 3, name: "Defensa Duelista",   description: "Mientras sostienes un arma en una mano y ninguna otra, +1 CA.", effect: { modifiers: { ac_bonus: 1 } } },
-      { id: 4, name: "Segundo Viento",     description: "Recuperas 1d10 + nivel puntos de vida.", effect: { action: { heal: "1d10 + @level", recharge: "SR", uses: { current: 1, max: 1 } } } },
-    ],
-    spellcasting: {
-      ability: "wis",
-      slots: { 1: { max: 4, current: 3 }, 2: { max: 3, current: 2 }, 3: { max: 2, current: 2 } },
-      spells: [
-        { id: 101, name: "Curar heridas",    description: "Una criatura recupera 1d8 + mod puntos de golpe.", ritual: false, concentration: false, prepared: true,  level: 1, effect: { damage: "1d8+mod", type: "curación", range: "Toque",            components: "V, S",    duration: "Instantáneo"                   } },
-        { id: 102, name: "Detectar magia",   description: "Percibes magia en un radio de 30 pies.",           ritual: true,  concentration: true,  prepared: false, level: 1, effect: { range: "Personal (30 pies)",                                components: "V, S",    duration: "Concentración, hasta 10 min"   } },
-        { id: 103, name: "Rayo abrasador",   description: "Tres rayos de fuego a objetivos distintos.",        ritual: false, concentration: false, prepared: true,  level: 2, effect: { damage: "2d6",       type: "fuego",    range: "120 pies",        components: "V, S",    duration: "Instantáneo"                   } },
-        { id: 104, name: "Forma gaseosa",    description: "Te transformas en una nube de gas voladora.",       ritual: false, concentration: true,  prepared: false, level: 3, effect: { range: "Toque",                                            components: "V, S, M", duration: "Concentración, hasta 1 hora"   } },
-      ],
-    },
-    character_note: { id: 1, title: "Historia de Thorn Ironwood", content: "Thorn creció en los bosques del norte, entrenado desde niño tanto como guardabosques como ladrón. Una vieja cicatriz en la mejilla izquierda de la que nunca habla." },
-    campaign_ids: [1, 3],
-  },
-  {
-    id: 2, userId: 2,
-    name: "Lirael Moonshadow",
-    classes: ["Wizard"],
-    species: "Elfo del Bosque",
-    background: "Sage",
-    level: 7,
-    image_url: "/images/characters/lirael.png",
-    ability_scores: { str: 8, dex: 14, con: 12, int: 19, wis: 10, cha: 11 },
-    proficiency_bonus: 3,
-    save_proficiencies: ["int", "wis"],
-    skill_proficiencies: [
-      { skill: "arcana",       level: "proficient" },
-      { skill: "history",      level: "proficient" },
-      { skill: "investigation", level: "expert"    },
-      { skill: "insight",      level: "proficient" },
-    ],
-    proficiency_list: [],
-    speed: 35,
-    hp: { max: 35, current: 28, temp: 0 },
-    hit_dice: { type: "d6", total: 7, remaining: 5 },
-    inventory: [
-      { id: 301, name: "Bastón arcano",           weight: 4,   quantity: 1, description: "Foco arcano de madera de fresno.", equipable: true,  equipped: true,  effect: { damage: "1d6", type: "contundente" } },
-      { id: 302, name: "Libro de hechizos",       weight: 3,   quantity: 1, description: "Contiene todos tus hechizos.",      equipable: false, equipped: false, effect: null },
-      { id: 303, name: "Poción de curación mayor",weight: 0.5, quantity: 1, description: "Recuperas 4d4+4 puntos de vida.",   equipable: false, equipped: false, effect: { heal: "4d4+4" } },
-    ],
-    features: [],
-    actions: [
-      { id: 11, name: "Ataque con bastón", description: "Ataque cuerpo a cuerpo con el bastón arcano.", recharge: "PerTurn", uses: { current: 1, max: 1 } },
-    ],
-    bonus_actions: [],
-    other_proficiencies: ["Laúd", "Ajedrez de dragón"],
-    stored_features: [
-      { id: 11, name: "Recuperación Arcana", description: "Una vez al día recuperas espacios de hechizo que no superen la mitad de tu nivel.", effect: { action: { heal: "slots", recharge: "LR", uses: { current: 1, max: 1 } } } },
-      { id: 12, name: "Escuela de Evocación", description: "Tus hechizos de evocación son más potentes y no afectan a aliados.", effect: { modifiers: { spell_damage_bonus: 1 } } },
-    ],
-    spellcasting: {
-      ability: "int",
-      slots: { 1: { max: 4, current: 4 }, 2: { max: 3, current: 1 }, 3: { max: 3, current: 3 }, 4: { max: 1, current: 0 } },
-      spells: [
-        { id: 201, name: "Bola de fuego",     description: "Explosión de fuego en un punto elegido.",  ritual: false, concentration: false, prepared: true,  level: 3, effect: { damage: "8d6",     type: "fuego",   range: "150 pies", components: "V, S, M", duration: "Instantáneo"                  } },
-        { id: 202, name: "Proyectil mágico",  description: "Tres dardos de energía mágica.",            ritual: false, concentration: false, prepared: true,  level: 1, effect: { damage: "1d4+1",  type: "mágico",  range: "120 pies", components: "V, S",    duration: "Instantáneo"                  } },
-        { id: 203, name: "Escudo",            description: "+5 CA hasta el inicio de tu siguiente turno.",ritual: false,concentration: false, prepared: true,  level: 1, effect: { ac_bonus: 5,                        range: "Personal", components: "V, S",    duration: "1 turno"                      } },
-        { id: 204, name: "Invisibilidad",     description: "Una criatura que toques se vuelve invisible.",ritual: false,concentration: true,  prepared: false, level: 2, effect: {                                     range: "Toque",    components: "V, S, M", duration: "Concentración, hasta 1 hora"  } },
-      ],
-    },
-    character_note: { id: 2, title: "Historia de Lirael Moonshadow", content: "Lirael abandonó su hogar élfico en búsqueda de un tomo arcano robado por un nigromante. Sus ojos brillan con luz propia al lanzar hechizos." },
-    campaign_ids: [1],
-  },
-  {
-    id: 3, userId: 3,
-    name: "Borin Battlehammer",
-    classes: ["Cleric", "Fighter"],
-    species: "Enano de las Montañas",
-    background: "Soldier",
-    level: 6,
-    image_url: "/images/characters/borin.png",
-    ability_scores: { str: 16, dex: 10, con: 16, int: 9, wis: 17, cha: 12 },
-    proficiency_bonus: 3,
-    save_proficiencies: ["wis", "cha"],
-    skill_proficiencies: [
-      { skill: "athletics",  level: "proficient" },
-      { skill: "perception", level: "proficient" },
-      { skill: "religion",   level: "proficient" },
-      { skill: "medicine",   level: "proficient" },
-    ],
-    proficiency_list: [],
-    speed: 25,
-    hp: { max: 52, current: 52, temp: 0 },
-    hit_dice: { type: "d8", total: 6, remaining: 6 },
-    inventory: [
-      { id: 401, name: "Mazo de guerra", weight: 4,  quantity: 1, description: "Símbolo sagrado de Moradin.", equipable: true, equipped: true,  effect: { damage: "1d8", type: "contundente" } },
-      { id: 402, name: "Escudo",         weight: 6,  quantity: 1, description: "Escudo de hierro enano.",    equipable: true, equipped: true,  effect: { ac_bonus: 2 } },
-      { id: 403, name: "Cota de malla",  weight: 55, quantity: 1, description: "Armadura pesada enana.",     equipable: true, equipped: true,  effect: { ac_bonus: 6 } },
-    ],
-    features: [],
-    actions: [
-      { id: 21, name: "Ataque con mazo", description: "Ataque cuerpo a cuerpo con mazo de guerra.", recharge: "PerTurn", uses: { current: 1, max: 1 } },
-      { id: 22, name: "Destrozar",       description: "Ataque que puede usar el retroceso de impacto.", recharge: "SR", uses: { current: 1, max: 1 } },
-    ],
-    bonus_actions: [
-      { id: 23, name: "Curación divina", description: "Gastas un espacio para curar 1d8 + SAB a un ser tocado.", recharge: "LR", uses: { current: 3, max: 3 } },
-    ],
-    other_proficiencies: ["Armaduras pesadas", "Herramientas de herrero", "Juego de dados"],
-    stored_features: [
-      { id: 21, name: "Repeler No-muertos", description: "Los no-muertos deben superar SAB CD 14 o huyen de ti.",     effect: { action: { recharge: "SR", uses: { current: 1, max: 1 } } } },
-      { id: 22, name: "Segundo Aliento",    description: "Recuperas 1d10 + nivel de guerrero puntos de vida.",        effect: { action: { heal: "1d10 + @level", recharge: "SR", uses: { current: 1, max: 1 } } } },
-    ],
-    spellcasting: {
-      ability: "wis",
-      slots: { 1: { max: 4, current: 4 }, 2: { max: 3, current: 3 }, 3: { max: 2, current: 2 } },
-      spells: [
-        { id: 301, name: "Curar heridas",   description: "Una criatura recupera 1d8 + SAB puntos de golpe.", ritual: false, concentration: false, prepared: true, level: 1, effect: { damage: "1d8+mod", type: "curación", range: "Toque",  components: "V, S",    duration: "Instantáneo"                 } },
-        { id: 302, name: "Escudo de la fe", description: "+2 CA a una criatura visible.",                    ritual: false, concentration: true,  prepared: true, level: 1, effect: { ac_bonus: 2,                        range: "60 pies", components: "V, S, M", duration: "Concentración, hasta 10 min" } },
-        { id: 303, name: "Arma espiritual", description: "Arma espectral que ataca a tus enemigos.",         ritual: false, concentration: false, prepared: true, level: 2, effect: { damage: "1d8+mod", type: "de fuerza", range: "60 pies", components: "V, S",    duration: "1 minuto"                    } },
-      ],
-    },
-    character_note: { id: 3, title: "Historia de Borin Battlehammer", content: "Borin sirvió como capellán en el ejército enano. Perdió a su comandante en el paso de hierro y ahora busca redención en nombre de Moradin." },
-    campaign_ids: [2],
-  },
-];
-let _nextCharacterId = 4;
-let _nextItemId = 500;
-let _nextActionId = 100;
-let _nextFeatureId = 50;
-let _nextSpellId = 400;
+// Compact 12-char ability scores string ↔ {str,dex,con,int,wis,cha}
+const _AB = ["str", "dex", "con", "int", "wis", "cha"];
+function _parseAbil(str) {
+  if (typeof str !== "string") return str ?? { str:10,dex:10,con:10,int:10,wis:10,cha:10 };
+  const o = {};
+  _AB.forEach((k, i) => { o[k] = parseInt(str.slice(i*2, i*2+2), 10) || 10; });
+  return o;
+}
+function _serializeAbil(obj) {
+  return _AB.map(k => String(obj[k] ?? 10).padStart(2, "0")).join("");
+}
 
-// ============ CREATURES ============
+// Parse compact spellSlots string → {1:{max,current}, ...}
+function _parseSlots(raw) {
+  if (typeof raw !== "string") return raw ?? {};
+  const slots = {};
+  for (let lv = 1; lv <= 9; lv++) {
+    const idx = (lv - 1) * 2;
+    const max     = parseInt(raw[idx]     ?? "0", 10);
+    const current = parseInt(raw[idx + 1] ?? "0", 10);
+    if (max > 0) slots[lv] = { max, current };
+  }
+  return slots;
+}
+
+// ── Current user (mutable singleton used by pages directly) ──────────────────
+let CURRENT_USER_ID = null;
+export const currentUser = { id: null, isGM: false };
+
+export function getCurrentUserId() { return CURRENT_USER_ID; }
+
+export function setCurrentUser({ id, isGM }) {
+  CURRENT_USER_ID   = id ?? null;
+  currentUser.id    = CURRENT_USER_ID;
+  currentUser.isGM  = isGM !== undefined ? isGM : false;
+}
+
+// ── Utility exports (pure – no DB needed) ────────────────────────────────────
 function _mod(score) { return Math.floor((score - 10) / 2); }
 export function fmtMod(score) { const m = _mod(score); return m >= 0 ? `+${m}` : `${m}`; }
-// Mutable singleton — updated via setCurrentUser() on login/logout
-export const currentUser = { id: CURRENT_USER_ID, isGM: true };
 
-let _folders = [
-  { id: "f1", name: "Humanoides", parentId: null },
-  { id: "f2", name: "Bestias",    parentId: null },
-  { id: "f3", name: "Jefes",      parentId: "f1" },
-];
-let _nextFolderId = 4;
-
-let _creatures = [
-  {
-    id: "c1", name: "Goblin", folderId: "f1", imageUrl: null, campaignIds: [1],
-    cr: "1/4", size: "Pequeño", creatureType: "Humanoide (goblinoide)", alignment: "Neutral Malvado",
-    ac: 15, acNote: "armadura de cuero tachonada, escudo",
-    hp: { current: 7, max: 7, formula: "2d6" }, speed: "9 m",
-    abilityScores: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
-    savingThrows: [], skills: [{ name: "Sigilo", mod: 6 }],
-    damageImmunities: [], damageResistances: [], conditionImmunities: [],
-    senses: "Visión en la oscuridad 18 m, Percepción pasiva 9", languages: "Común, Goblin",
-    specialTraits: [{ name: "Escape Nimble", description: "Puede Desvincularse o Esconderse como acción adicional en cada turno." }],
-    actions: [
-      { name: "Cimitarra", description: "Ataque cuerpo a cuerpo: +4 al ataque, 1d6+2 de daño cortante." },
-      { name: "Arco corto", description: "Ataque a distancia: +4 al ataque, 1d6+2 de daño perforante." },
-    ],
-    bonusActions: [], reactions: [],
-    gmNotes: "Patrullan las ruinas del este. Aliados de Klarg.",
-    playerVisibleNotes: "Criaturas pequeñas y furtivas que hablan goblin.",
-  },
-  {
-    id: "c2", name: "Hobgoblin Capitán", folderId: "f3", imageUrl: null, campaignIds: [1, 2],
-    cr: "3", size: "Mediano", creatureType: "Humanoide (goblinoide)", alignment: "Legal Malvado",
-    ac: 17, acNote: "cota de malla, escudo",
-    hp: { current: 52, max: 52, formula: "8d8+16" }, speed: "9 m",
-    abilityScores: { str: 15, dex: 12, con: 14, int: 12, wis: 10, cha: 13 },
-    savingThrows: [{ ability: "INT", mod: 3 }, { ability: "SAB", mod: 2 }],
-    skills: [{ name: "Historia", mod: 3 }],
-    damageImmunities: [], damageResistances: [], conditionImmunities: [],
-    senses: "Visión en la oscuridad 18 m, Percepción pasiva 10", languages: "Común, Goblin",
-    specialTraits: [{ name: "Disciplina Marcial", description: "Puede usar su reacción para que un hobgoblin aliado a 9 m relance una tirada de ataque fallida." }],
-    actions: [
-      { name: "Ataque múltiple", description: "Realiza dos ataques cuerpo a cuerpo." },
-      { name: "Longsword",        description: "Ataque c·a·c: +4 al ataque, 1d8+2 cortante (1d10+2 a dos manos)." },
-      { name: "Escudo de guerrero", description: "Hasta el siguiente turno, los ataques contra él tienen desventaja." },
-    ],
-    bonusActions: [], reactions: [],
-    gmNotes: "Líder del puesto avanzado. Conoce el campamento principal.",
-    playerVisibleNotes: "Un hobgoblin imponente con armadura brillante.",
-  },
-  {
-    id: "c3", name: "Lobo Gigante", folderId: "f2", imageUrl: null, campaignIds: [1],
-    cr: "1", size: "Grande", creatureType: "Bestia", alignment: "No alineado",
-    ac: 13, acNote: "armadura natural",
-    hp: { current: 26, max: 26, formula: "4d10+4" }, speed: "15 m",
-    abilityScores: { str: 17, dex: 15, con: 13, int: 3, wis: 12, cha: 7 },
-    savingThrows: [], skills: [{ name: "Percepción", mod: 3 }, { name: "Sigilo", mod: 4 }],
-    damageImmunities: [], damageResistances: [], conditionImmunities: [],
-    senses: "Percepción pasiva 13", languages: "Goblin, Lobo gigante (no habla)",
-    specialTraits: [
-      { name: "Olfato agudo",       description: "Ventaja en pruebas de Percepción basadas en el olfato." },
-      { name: "Tácticas de jauría", description: "Ventaja en ataques si un aliado no incapacitado está a 1,5 m del objetivo." },
-    ],
-    actions: [{ name: "Mordisco", description: "Ataque c·a·c: +5, 2d6+3 perforante. Si falla FUE CD 13, el objetivo cae derribado." }],
-    bonusActions: [], reactions: [],
-    gmNotes: "Montura de los jinetes goblin. Tres en el perímetro norte.",
-    playerVisibleNotes: "Un enorme lobo negro con ojos amarillos.",
-  },
-  {
-    id: "c4", name: "Esqueleto", folderId: null, imageUrl: null, campaignIds: [2],
-    cr: "1/4", size: "Mediano", creatureType: "No-muerto", alignment: "Legal Malvado",
-    ac: 13, acNote: "restos de armadura",
-    hp: { current: 13, max: 13, formula: "2d8+4" }, speed: "9 m",
-    abilityScores: { str: 10, dex: 14, con: 15, int: 6, wis: 8, cha: 5 },
-    savingThrows: [], skills: [],
-    damageImmunities: ["veneno"], damageResistances: [], conditionImmunities: ["agotamiento", "envenenado"],
-    senses: "Visión en la oscuridad 18 m, Percepción pasiva 9",
-    languages: "Entiende los idiomas que conocía en vida pero no puede hablar",
-    specialTraits: [],
-    actions: [
-      { name: "Cimitarra", description: "Ataque c·a·c: +4, 1d6+2 cortante." },
-      { name: "Arco corto", description: "Ataque a distancia: +4, 1d6+2 perforante." },
-    ],
-    bonusActions: [], reactions: [],
-    gmNotes: "Animados por el nigromante del castillo. Patrullan la cripta.",
-    playerVisibleNotes: "Huesos reanimados que se mueven con una voluntad sobrenatural.",
-  },
-];
-let _nextCreatureId = 5;
-
-// ============ NOTES ============
-let _notes = [
-  { id: 1, campaignId: 1, title: "Sesión 1: El Inicio",                content: "Los aventureros se reunieron en la Posada del Dragón Rojo en Leilon. El alcalde Harbin Wester los contrató para investigar unas minas al noreste. El grupo estaba formado por Thorn Ironwood (explorador) y Lirael Moonshadow (maga).",           isPublic: true,  authorId: 1, createdAt: "2026-01-10" },
-  { id: 2, campaignId: 1, title: "Klarg el Hobgoblin — Notas privadas", content: "Klarg sabe la ubicación del campamento de bugbears al norte. No revelarlo hasta que los jugadores lo capturen. Tiene un medallón robado que pertenece a la familia Rockseeker.",                                                                    isPublic: false, authorId: 1, createdAt: "2026-01-10" },
-  { id: 3, campaignId: 1, title: "Mapa de las Minas",                   content: "La entrada norte está bloqueada por un derrumbe. La sala central tiene una fuente mágica que restaura un PV al beber (una vez por descanso largo). El nivel inferior contiene el tesoro principal.",                                                    isPublic: true,  authorId: 1, createdAt: "2026-01-17" },
-  { id: 4, campaignId: 1, title: "Sesión 3: La Traición",               content: "Sildar fue capturado por los Puños de Hierro. El grupo negoció su liberación a cambio de escoltar un cargamento. Thorn descubrió que el comerciante local es un informante.",                                                                        isPublic: true,  authorId: 1, createdAt: "2026-01-31" },
-  { id: 5, campaignId: 2, title: "Llegada a Barovia",                   content: "El grupo despertó envuelto en niebla. Las puertas de Barovia se cerraron detrás de ellos. Los aldeanos los miraron con miedo.",                                                                                                                        isPublic: true,  authorId: 1, createdAt: "2026-02-07" },
-  { id: 6, campaignId: 2, title: "El Castillo Ravenloft — Secretos",    content: "Strahd tiene tres aliados en el castillo. El corazón de la oscuridad está en la cripta del sótano. La reliquia del sol puede debilitarlo combinada con agua sagrada.",                                                                                  isPublic: false, authorId: 1, createdAt: "2026-02-14" },
-  { id: 7, campaignId: 3, title: "La Jungla",                           content: "El calor y la humedad son sofocantes. El grupo encontró rastros de una expedición anterior abandonada hace 3 meses.",                                                                                                                                   isPublic: true,  authorId: 2, createdAt: "2026-03-01" },
-];
-let _nextNoteId = 8;
-
-// ============ MESSAGES ============
-let _messages = {
-  1: [
-    { id:  1, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "text",         content: "¡Vamos a explorar la cueva!",                                                              timestamp: "2026-05-10T10:00:00Z", isWhisper: false, whisperTo: null },
-    { id:  2, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "text",         content: "La entrada está oscura y húmeda.",                                                         timestamp: "2026-05-10T10:01:00Z", isWhisper: false, whisperTo: null },
-    { id:  3, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "dice_roll",    content: { dice: "3d6",  results: [3,5,2], total: 10, advantage: false, disadvantage: false },        timestamp: "2026-05-10T10:02:00Z", isWhisper: false, whisperTo: null },
-    { id:  4, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "whisper",      content: "Te noto muy callado, ¿todo bien?",                                                         timestamp: "2026-05-10T10:03:00Z", isWhisper: true,  whisperTo: 3   },
-    { id:  5, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "ability_append",content: { abilityName: "Furia Salvaje",    description: "Ventaja en ataques c·a·c durante 1 min." }, timestamp: "2026-05-10T10:04:00Z", isWhisper: false, whisperTo: null },
-    { id:  6, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "note_append",  content: { noteTitle: "Pistas encontradas", snippet: "Hallisteis un diario con coordenadas y el símbolo de una serpiente alada." }, timestamp: "2026-05-10T10:05:00Z", isWhisper: false, whisperTo: null },
-    { id:  7, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "text",         content: "¿Qué hay escrito en el diario?",                                                           timestamp: "2026-05-10T10:06:00Z", isWhisper: false, whisperTo: null },
-    { id:  8, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "text",         content: "Las páginas están deterioradas pero distingues coordenadas y el símbolo de una serpiente alada.", timestamp: "2026-05-10T10:07:00Z", isWhisper: false, whisperTo: null },
-    { id:  9, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "dice_roll",    content: { dice: "1d20", results: [17],    total: 17, advantage: false, disadvantage: false },        timestamp: "2026-05-10T10:08:00Z", isWhisper: false, whisperTo: null },
-    { id: 10, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "text",         content: "Con ese resultado en Arcanos, reconoces el símbolo: es la marca de la Cofradía de la Sombra Escarlata.", timestamp: "2026-05-10T10:08:30Z", isWhisper: false, whisperTo: null },
-    { id: 11, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "text",         content: "Thorn aprieta el diario contra su pecho. «Esos bastardos», murmura.",                    timestamp: "2026-05-10T10:09:00Z", isWhisper: false, whisperTo: null },
-    { id: 12, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "text",         content: "De repente escucháis pasos al fondo del pasillo. Lentos, pesados... y se acercan.",     timestamp: "2026-05-10T10:10:00Z", isWhisper: false, whisperTo: null },
-    { id: 13, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "ability_append",content: { abilityName: "Sigilo Experto", description: "Thorn se funde con las sombras, ventaja en Sigilo." }, timestamp: "2026-05-10T10:10:30Z", isWhisper: false, whisperTo: null },
-    { id: 14, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "dice_roll",    content: { dice: "2d20", results: [12,19], total: 19, advantage: true,  disadvantage: false },        timestamp: "2026-05-10T10:10:45Z", isWhisper: false, whisperTo: null },
-    { id: 15, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "text",         content: "La guardia pasa de largo sin verte. Espera un turno antes de actuar.",               timestamp: "2026-05-10T10:11:00Z", isWhisper: false, whisperTo: null },
-    { id: 16, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "whisper",      content: "El guardia lleva un medallón que reconoces: es de tu antiguo mentor.",               timestamp: "2026-05-10T10:11:30Z", isWhisper: true,  whisperTo: 2   },
-    { id: 17, chatId: 1, senderId: 2, senderUsername: "Player_Anna", characterId: 1,    characterName: "Thorn Ironwood",    characterAvatar: "/avatars/thorn.png", type: "text",         content: "Salgo de las sombras y le pongo la hoja en el cuello. «¿Dónde está Gareth?»",        timestamp: "2026-05-10T10:12:00Z", isWhisper: false, whisperTo: null },
-    { id: 18, chatId: 1, senderId: 1, senderUsername: "GM_Dave",     characterId: null, characterName: null,                characterAvatar: null,                 type: "text",         content: "El guardia tiembla. «¡No lo sé, juro que no lo sé! Solo... solo seguí órdenes.»",  timestamp: "2026-05-10T10:12:45Z", isWhisper: false, whisperTo: null },
-  ],
-  2: [
-    { id: 19, chatId: 2, senderId: 1, senderUsername: "GM_Dave", characterId: null, characterName: null, characterAvatar: null, type: "text", content: "La niebla os envuelve mientras las puertas de Barovia se cierran de golpe.", timestamp: "2026-02-07T20:00:00Z", isWhisper: false, whisperTo: null },
-    { id: 20, chatId: 2, senderId: 5, senderUsername: "Player_Dan", characterId: null, characterName: null, characterAvatar: null, type: "text", content: "¿Podemos volver por donde vinimos?", timestamp: "2026-02-07T20:01:00Z", isWhisper: false, whisperTo: null },
-    { id: 21, chatId: 2, senderId: 1, senderUsername: "GM_Dave", characterId: null, characterName: null, characterAvatar: null, type: "text", content: "Las puertas están selladas. Solo hay un camino: hacia delante.", timestamp: "2026-02-07T20:01:30Z", isWhisper: false, whisperTo: null },
-  ],
-  3: [
-    { id: 22, chatId: 3, senderId: 2, senderUsername: "Player_Anna", characterId: null, characterName: null, characterAvatar: null, type: "text", content: "La jungla es sofocante. Hay rastros de una expedición anterior.", timestamp: "2026-03-01T18:00:00Z", isWhisper: false, whisperTo: null },
-    { id: 23, chatId: 3, senderId: 9, senderUsername: "Player_Hugo", characterId: null, characterName: null, characterAvatar: null, type: "dice_roll", content: { dice: "1d20", results: [14], total: 14, advantage: false, disadvantage: false }, timestamp: "2026-03-01T18:01:00Z", isWhisper: false, whisperTo: null },
-  ],
-};
-let _nextMessageId = 24;
-
-// ============ PLANNER ============
 export const TIME_SLOTS = [
   { id: "amanecer",    label: "Amanecer",    range: "6:00–9:00"   },
   { id: "manana",      label: "Mañana",      range: "9:00–12:00"  },
@@ -389,410 +92,830 @@ export function getWeekDays(referenceDate = new Date()) {
   return days;
 }
 
-const _baseWeek = getWeekDays(new Date());
-const [_mon, _tue, _wed, _thu, _fri, _sat, _sun] = _baseWeek;
-
-let _availability = {
-  1:  { [_mon]: ["tarde", "tarde_noche", "noche"],                     [_wed]: ["noche", "madrugada"],              [_fri]: ["tarde", "tarde_noche"],                         [_sat]: ["manana", "mediodia", "tarde", "tarde_noche"] },
-  2:  { [_tue]: ["tarde", "tarde_noche"],                              [_wed]: ["tarde", "noche"],                  [_fri]: ["tarde_noche", "noche"],                         [_sat]: ["mediodia", "tarde", "tarde_noche"] },
-  3:  { [_mon]: ["noche", "madrugada"],                                [_wed]: ["tarde_noche", "noche"],            [_thu]: ["tarde", "tarde_noche"],                         [_sat]: ["amanecer", "manana", "mediodia"] },
-  4:  { [_mon]: ["tarde", "tarde_noche"],                              [_wed]: ["noche"],                           [_fri]: ["tarde"],                                        [_sat]: ["tarde", "tarde_noche", "noche"] },
-  5:  { [_tue]: ["amanecer", "manana"],                                [_thu]: ["tarde", "tarde_noche"],            [_sun]: ["mediodia", "tarde"] },
-  6:  { [_mon]: ["mediodia", "tarde"],                                 [_wed]: ["tarde", "tarde_noche"],            [_sat]: ["noche", "madrugada"] },
-  7:  { [_wed]: ["manana", "mediodia"],                                [_fri]: ["tarde_noche", "noche"],            [_sun]: ["tarde", "noche"] },
-  8:  { [_tue]: ["noche", "madrugada"],                                [_thu]: ["tarde_noche"],                     [_sat]: ["tarde", "tarde_noche"] },
-  9:  { [_mon]: ["manana"],                                            [_wed]: ["mediodia", "tarde"],               [_fri]: ["noche"] },
-  10: { [_tue]: ["tarde", "tarde_noche"],                              [_thu]: ["manana", "mediodia"],              [_sat]: ["amanecer", "manana"] },
-};
-
-// ============ AUTH ============
-export async function loginUser(username, password) {
-  await _sim(300);
-  const user = Object.values(_users).find(u => u.username === username && u.password === password);
-  if (!user) return null;
-  const { password: _pw, ...safeUser } = user;
-  return safeUser;
+export function computeOverlap(participants, date, slotId) {
+  return participants.filter(p => p.availability[date]?.includes(slotId)).length;
 }
 
-// ============ CAMPAIGN FUNCTIONS ============
+// ── DB → JS normalizers (DB returns all-lowercase column names) ───────────────
+function _normCampaign(c) {
+  if (!c) return c;
+  return { ...c, ownerId: c.ownerid, imageUrl: c.imageurl ?? null, inviteCode: c.invitecode ?? null };
+}
+
+function _normNote(n) {
+  if (!n) return n;
+  return { ...n, campaignId: n.campaignid, isPublic: n.ispublic, authorId: n.authorid, createdAt: n.createdat };
+}
+
+function _normMessage(msg) {
+  if (!msg) return msg;
+  let content = msg.content;
+  if (msg.type !== "text" && msg.type !== "whisper") {
+    content = _parseJSON(msg.content, msg.content);
+  }
+  return {
+    ...msg,
+    chatId:          msg.chatid,
+    senderId:        msg.senderid,
+    senderUsername:  msg.senderusername,
+    characterId:     msg.characterid,
+    characterName:   msg.charactername,
+    characterAvatar: msg.characteravatar,
+    isWhisper:       msg.iswhisper,
+    whisperTo:       msg.whisperto,
+    content,
+  };
+}
+
+function _normUser(u) {
+  if (!u) return u;
+  const { passwordhash: _pw, ...safe } = u;
+  return { ...safe, displayName: u.displayname, avatarUrl: u.avatarurl ?? null, joinedAt: u.joinedat };
+}
+
+// ── Creature serialization helpers ───────────────────────────────────────────
+function _deserializeCreature(row, campaignIds = []) {
+  return {
+    id:               row.id,
+    name:             row.name,
+    ownerId:          row.ownerid,
+    folderId:         row.folderid ?? null,
+    imageUrl:         row.imageurl ?? null,
+    campaignIds,
+    cr:               row.cr ?? "",
+    size:             row.size,
+    creatureType:     row.creaturetype,
+    alignment:        row.alignment ?? "",
+    ac:               row.ac,
+    acNote:           row.acnote ?? "",
+    hp: {
+      current: row.currenthp,
+      max:     row.hpmax,
+      formula: row.hpformula ?? "",
+    },
+    speed:              row.speed,
+    abilityScores:      _parseAbil(row.abilityscores),
+    savingThrows:       _parseJSON(row.savingthrows, []),
+    skills:             _parseJSON(row.skills, []),
+    damageImmunities:   _parseComma(row.damageimmunities),
+    damageResistances:  _parseComma(row.damageresistances),
+    conditionImmunities:_parseComma(row.conditionimmunities),
+    senses:             row.senses ?? "",
+    languages:          row.languages ?? "",
+    specialTraits:      _parseJSON(row.specialtraits, []),
+    actions:            _parseJSON(row.actions, []),
+    bonusActions:       _parseJSON(row.bonusactions, []),
+    reactions:          _parseJSON(row.reactions, []),
+    gmNotes:            row.gmnotes ?? "",
+    playerVisibleNotes: row.playervisiblenotes ?? "",
+  };
+}
+
+function _serializeCreature(creature) {
+  return {
+    name:               creature.name,
+    size:               creature.size,
+    creaturetype:       creature.creatureType,
+    alignment:          creature.alignment || null,
+    cr:                 creature.cr || null,
+    ac:                 creature.ac,
+    acnote:             creature.acNote || null,
+    hpmax:              creature.hp?.max     ?? creature.hpMax,
+    currenthp:          creature.hp?.current ?? creature.currentHp,
+    hpformula:          creature.hp?.formula  ?? creature.hpFormula ?? null,
+    speed:              creature.speed,
+    abilityscores:      _serializeAbil(creature.abilityScores ?? {}),
+    savingthrows:       _toJSON(creature.savingThrows ?? []),
+    skills:             _toJSON(creature.skills ?? []),
+    damageimmunities:   _serializeComma(creature.damageImmunities),
+    damageresistances:  _serializeComma(creature.damageResistances),
+    conditionimmunities:_serializeComma(creature.conditionImmunities),
+    senses:             creature.senses || null,
+    languages:          creature.languages || null,
+    specialtraits:      _toJSON(creature.specialTraits ?? []),
+    actions:            _toJSON(creature.actions ?? []),
+    bonusactions:       _toJSON(creature.bonusActions ?? []),
+    reactions:          _toJSON(creature.reactions ?? []),
+    gmnotes:            creature.gmNotes || null,
+    playervisiblenotes: creature.playerVisibleNotes || null,
+    folderid:           creature.folderId || null,
+    ownerid:            CURRENT_USER_ID,
+  };
+}
+
+// ── Character deserialization helper ─────────────────────────────────────────
+function _deserializeCharacter(row, campaignIds = []) {
+  return {
+    ...row,
+    // camelCase aliases required by characterDataAdapter.js fromDatabase()
+    abilityScores:     row.abilityscores,
+    saveProficiencies: row.saveproficiencies,
+    skillProficiencies:row.skillproficiencies,
+    imageUrl:          row.imageurl ?? null,
+    hpMax:             row.hpmax,
+    currentHp:         row.currenthp,
+    tempHp:            row.temphp,
+    hitDiceType:       row.hitdicetype,
+    hitDiceTotal:      row.hitdicetotal,
+    hitDiceRemaining:  row.hitdiceremaining,
+    spellcastingAbility: row.spellcastingability || null,
+    classes:         row.classes ? row.classes.split(",").map(s => s.trim()) : [],
+    inventory:       _parseJSON(row.inventory, []),
+    // features must be a parsed array (overrides the raw JSON string from ...row)
+    features:        _parseJSON(row.features, []),
+    stored_features: _parseJSON(row.features, []),
+    character_note:  _parseJSON(row.characternote, { id: Date.now(), title: "Historia", content: "" }),
+    proficiency_list:_parseJSON(row.proficiencylist, []),
+    campaign_ids:    campaignIds,
+    spellcasting: {
+      ability: row.spellcastingability || "int",
+      slots:   row.spellslots,
+      spells:  _parseJSON(row.spells, []),
+    },
+  };
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+export async function registerUser(username, email, password) {
+  const { data: existing } = await supabase
+    .from("User")
+    .select("id")
+    .eq("username", username)
+    .limit(1);
+
+  if (existing?.length) throw new Error("El nombre de usuario ya está en uso");
+
+  const { data, error } = await supabase
+    .from("User")
+    .insert({
+      username,
+      displayname: username,
+      email,
+      passwordhash: password,
+      active: true,
+      joinedat: new Date().toISOString().split("T")[0],
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error("Error al crear la cuenta: " + error.message);
+  return { ..._normUser(data), isGM: false };
+}
+
+export async function loginUser(username, password) {
+  const { data: users, error } = await supabase
+    .from("User")
+    .select("*")
+    .eq("username", username)
+    .eq("passwordhash", password)
+    .eq("active", true)
+    .limit(1);
+
+  if (error || !users?.length) return null;
+  const user = users[0];
+
+  const { data: gmRows } = await supabase
+    .from("UserXCampaign")
+    .select("campaignid")
+    .eq("userid", user.id)
+    .eq("role", "gm")
+    .limit(1);
+
+  const isGM = !!(gmRows?.length);
+  return { ..._normUser(user), isGM };
+}
+
+// ── Campaign functions ────────────────────────────────────────────────────────
 export async function fetchCampaigns(userId = CURRENT_USER_ID) {
-  await _sim();
-  return _campaigns
-    .filter(c => c.ownerId === userId || (_campaignMembers[c.id]?.playerIds || []).includes(userId))
-    .map(c => {
-      const members = _campaignMembers[c.id] || { ownerId: c.ownerId, playerIds: [] };
-      return {
-        ...c,
-        players: members.playerIds,
-        playersCount: members.playerIds.length,
-        npcsCount: _creatures.filter(cr => cr.campaignIds.includes(c.id)).length,
-        notesCount: _notes.filter(n => n.campaignId === c.id).length,
-      };
-    });
+  const { data: memberships } = await supabase
+    .from("UserXCampaign")
+    .select("campaignid")
+    .eq("userid", userId);
+
+  const ids = (memberships || []).map(m => m.campaignid);
+  if (!ids.length) return [];
+
+  const [{ data: campaigns }, { data: allMembers }, { data: creatureLinks }, { data: notes }] =
+    await Promise.all([
+      supabase.from("Campaign").select("*").in("id", ids),
+      supabase.from("UserXCampaign").select("campaignid, userid").in("campaignid", ids),
+      supabase.from("CreatureXCampaign").select("campaignid").in("campaignid", ids),
+      supabase.from("Note").select("campaignid").in("campaignid", ids).eq("active", true),
+    ]);
+
+  return (campaigns || []).map(c => {
+    const members   = (allMembers   || []).filter(m => m.campaignid === c.id);
+    const playerIds = members.map(m => m.userid);
+    return {
+      ..._normCampaign(c),
+      players:      playerIds,
+      playersCount: playerIds.length,
+      npcsCount:    (creatureLinks || []).filter(cr => cr.campaignid === c.id).length,
+      notesCount:   (notes         || []).filter(n  => n.campaignid  === c.id).length,
+    };
+  });
 }
 
 export async function fetchHomeData(userId = CURRENT_USER_ID) {
-  await _sim();
   const campaigns = await fetchCampaigns(userId);
+
+  const { data: userRow } = await supabase
+    .from("User").select("*").eq("id", userId).single();
+
+  const chatIds = campaigns.map(c => c.id);
+  const { data: lastMsgs } = await supabase
+    .from("Message")
+    .select("chatid, type, content")
+    .in("chatid", chatIds)
+    .order("timestamp", { ascending: false });
+
+  const lastByChat = {};
+  (lastMsgs || []).forEach(msg => {
+    if (!lastByChat[msg.chatid]) lastByChat[msg.chatid] = msg;
+  });
+
   return {
-    user: (({ password: _pw, ...u }) => u)(_users[userId]),
+    user: _normUser(userRow ?? {}),
     campaigns: campaigns.map(c => {
-      const lastMsg = _messages[c.id]?.slice(-1)[0];
+      const lastMsg = lastByChat[c.id];
       let lastMessage = "";
       if (lastMsg) {
-        if (typeof lastMsg.content === "string") lastMessage = lastMsg.content;
-        else if (lastMsg.type === "dice_roll") lastMessage = `🎲 ${lastMsg.content.dice} = ${lastMsg.content.total}`;
-        else if (lastMsg.type === "ability_append") lastMessage = `⚡ ${lastMsg.content.abilityName}`;
-        else if (lastMsg.type === "note_append") lastMessage = `📝 ${lastMsg.content.noteTitle}`;
+        if (lastMsg.type === "text" || lastMsg.type === "whisper") {
+          lastMessage = typeof lastMsg.content === "string" ? lastMsg.content : "";
+        } else if (lastMsg.type === "dice_roll") {
+          const d = _parseJSON(lastMsg.content, {});
+          lastMessage = `🎲 ${d.dice} = ${d.total}`;
+        } else if (lastMsg.type === "ability_append") {
+          const d = _parseJSON(lastMsg.content, {});
+          lastMessage = `⚡ ${d.abilityName}`;
+        } else if (lastMsg.type === "note_append") {
+          const d = _parseJSON(lastMsg.content, {});
+          lastMessage = `📝 ${d.noteTitle}`;
+        }
       }
       return { id: c.id, name: c.name, active: c.active, imageUrl: c.imageUrl, lastMessage, unreadCount: 0 };
     }),
     recentSessions: [],
-    myCharactersCount: _characters.filter(ch => ch.userId === userId).length,
-    myCreaturesCount: _creatures.length,
+    myCharactersCount: 0,
+    myCreaturesCount:  0,
   };
 }
 
 export async function createCampaign({ name, description = "" }) {
-  await _sim(300);
   const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-  const newCamp = {
-    id: _nextCampaignId++, name, description,
-    ownerId: CURRENT_USER_ID, active: false, imageUrl: null, inviteCode: code,
-  };
-  _campaigns.push(newCamp);
-  _campaignMembers[newCamp.id] = { ownerId: CURRENT_USER_ID, playerIds: [CURRENT_USER_ID] };
-  return _clone(newCamp);
+  const { data: camp, error } = await supabase
+    .from("Campaign")
+    .insert({ name, description, ownerid: CURRENT_USER_ID, active: false, invitecode: code })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  await Promise.all([
+    supabase.from("UserXCampaign").insert({ userid: CURRENT_USER_ID, campaignid: camp.id, role: "gm" }),
+    supabase.from("Chat").insert({ campaignid: camp.id }),
+  ]);
+
+  // Promote the current session to GM (persists until next login)
+  if (currentUser && !currentUser.isGM) {
+    currentUser.isGM = true;
+    try {
+      const raw = localStorage.getItem("dnd_session");
+      if (raw) {
+        const stored = JSON.parse(raw);
+        stored.isGM = true;
+        localStorage.setItem("dnd_session", JSON.stringify(stored));
+      }
+    } catch {}
+  }
+
+  return _normCampaign(camp);
 }
 
 export async function joinCampaignByCode(code) {
-  await _sim(300);
-  const camp = _campaigns.find(c => c.inviteCode?.toUpperCase() === code.trim().toUpperCase());
-  if (!camp) throw new Error(`Código "${code}" no encontrado.`);
-  const members = _campaignMembers[camp.id];
-  if (members && !members.playerIds.includes(CURRENT_USER_ID)) {
-    members.playerIds.push(CURRENT_USER_ID);
-  }
-  return _clone(camp);
+  const { data: camps } = await supabase
+    .from("Campaign")
+    .select("*")
+    .ilike("invitecode", code.trim());
+
+  if (!camps?.length) throw new Error(`Código "${code}" no encontrado.`);
+  const camp = camps[0];
+
+  await supabase
+    .from("UserXCampaign")
+    .upsert({ userid: CURRENT_USER_ID, campaignid: camp.id, role: "player" }, { onConflict: "userid,campaignid" });
+
+  return _normCampaign(camp);
 }
 
 export async function toggleCampaignActive(campaignId) {
-  await _sim(150);
-  const camp = _campaigns.find(c => c.id === Number(campaignId));
-  if (!camp) throw new Error("Campaña no encontrada.");
-  camp.active = !camp.active;
-  return _clone(camp);
+  const id = Number(campaignId);
+  const { data: camp } = await supabase.from("Campaign").select("active").eq("id", id).single();
+  const { data: updated, error } = await supabase
+    .from("Campaign").update({ active: !camp.active }).eq("id", id).select().single();
+  if (error) throw error;
+  return _normCampaign(updated);
 }
 
 export async function deleteCampaign(campaignId) {
-  await _sim(200);
-  const idx = _campaigns.findIndex(c => c.id === Number(campaignId));
-  if (idx !== -1) _campaigns.splice(idx, 1);
+  await supabase.from("Campaign").update({ active: false }).eq("id", Number(campaignId));
   return { success: true };
 }
 
-// ============ PLAYER FUNCTIONS ============
+// ── Player functions ──────────────────────────────────────────────────────────
 export async function fetchCampaignPlayers(campaignId) {
-  await _sim();
-  const members = _campaignMembers[Number(campaignId)];
-  if (!members) return { ownerId: null, players: [] };
-  const players = members.playerIds.map(id => {
-    const { password: _pw, ...u } = _users[id];
-    return u;
-  }).filter(Boolean);
-  return { ownerId: members.ownerId, players };
+  const { data: camp } = await supabase
+    .from("Campaign").select("ownerid").eq("id", Number(campaignId)).single();
+  const { data: members } = await supabase
+    .from("UserXCampaign").select("userid").eq("campaignid", Number(campaignId));
+
+  const ids = (members || []).map(m => m.userid);
+  const { data: users } = await supabase.from("User").select("*").in("id", ids);
+
+  const players = (users || []).map(_normUser);
+  return { ownerId: camp?.ownerid ?? null, players };
 }
 
 export async function kickPlayer(campaignId, userId) {
-  await _sim(200);
-  const members = _campaignMembers[Number(campaignId)];
-  if (members) members.playerIds = members.playerIds.filter(id => id !== userId);
+  await supabase
+    .from("UserXCampaign")
+    .delete()
+    .eq("campaignid", Number(campaignId))
+    .eq("userid", userId);
   return { success: true };
 }
 
 export async function invitePlayer(campaignId, username) {
-  await _sim(200);
-  const user = Object.values(_users).find(u => u.username === username);
-  if (!user) throw new Error(`Usuario "${username}" no encontrado.`);
-  const members = _campaignMembers[Number(campaignId)];
-  if (members && !members.playerIds.includes(user.id)) members.playerIds.push(user.id);
-  const { password: _pw, ...safeUser } = user;
-  return safeUser;
+  const { data: users } = await supabase
+    .from("User").select("*").eq("username", username).eq("active", true).limit(1);
+  if (!users?.length) throw new Error(`Usuario "${username}" no encontrado.`);
+  const user = users[0];
+
+  await supabase
+    .from("UserXCampaign")
+    .upsert({ userid: user.id, campaignid: Number(campaignId), role: "player" }, { onConflict: "userid,campaignid" });
+
+  return _normUser(user);
 }
 
-// ============ CHARACTER FUNCTIONS ============
+// ── Character functions ───────────────────────────────────────────────────────
 export async function fetchUserCharacters(userId = CURRENT_USER_ID) {
-  await _sim();
-  return _characters
-    .filter(c => c.userId === userId)
-    .map(c => ({
-      id: c.id, userId: c.userId,
-      name: c.name, classes: c.classes, level: c.level,
-      species: c.species, background: c.background,
-      imageUrl: c.image_url,
-      stats: c.ability_scores,
-      campaigns: c.campaign_ids.map(cid => {
-        const camp = _campaigns.find(x => x.id === cid);
-        return camp ? { id: camp.id, name: camp.name } : null;
-      }).filter(Boolean),
-    }));
+  const { data: chars } = await supabase
+    .from("Character").select("id, name, classes, level, species, background, imageurl, ownerid")
+    .eq("ownerid", userId).eq("active", true);
+
+  if (!chars?.length) return [];
+
+  const charIds = chars.map(c => c.id);
+  const { data: links } = await supabase
+    .from("CharacterXCampaign").select("characterid, campaignid").in("characterid", charIds);
+  const allCampIds = [...new Set((links || []).map(l => l.campaignid))];
+  const { data: allCamps } = allCampIds.length
+    ? await supabase.from("Campaign").select("id, name").in("id", allCampIds)
+    : { data: [] };
+
+  return chars.map(c => ({
+    id:         c.id,
+    userId:     c.ownerid,
+    name:       c.name,
+    classes:    c.classes ? c.classes.split(",").map(s => s.trim()) : [],
+    level:      c.level,
+    species:    c.species,
+    background: c.background,
+    imageUrl:   c.imageurl,
+    stats:      {},
+    campaigns: (links || [])
+      .filter(l => l.characterid === c.id)
+      .map(l => { const camp = (allCamps || []).find(x => x.id === l.campaignid); return camp ?? null; })
+      .filter(Boolean),
+  }));
 }
 
 export async function createCharacter() {
-  await _sim(300);
-  const newChar = {
-    id: _nextCharacterId++, userId: CURRENT_USER_ID,
-    name: "Nuevo Personaje", classes: [], species: "", background: "", level: 1,
-    image_url: null,
-    ability_scores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
-    proficiency_bonus: 2, save_proficiencies: [], skill_proficiencies: [], proficiency_list: [],
-    speed: 30, hp: { max: 8, current: 8, temp: 0 }, hit_dice: { type: "d8", total: 1, remaining: 1 },
-    inventory: [], features: [], actions: [], bonus_actions: [], other_proficiencies: [],
-    stored_features: [], spellcasting: { ability: "int", slots: {}, spells: [] },
-    character_note: { id: Date.now(), title: "Historia", content: "" },
-    campaign_ids: [],
-  };
-  _characters.push(newChar);
+  const { data: newChar, error } = await supabase
+    .from("Character")
+    .insert({
+      name: "Nuevo Personaje", classes: "", species: "", background: "", level: 1,
+      imageurl: null,
+      abilityscores: "101010101010", saveproficiencies: "000000",
+      skillproficiencies: "000000000000000000",
+      speed: 30, hpmax: 8, currenthp: 8, temphp: 0,
+      hitdicetype: "d8", hitdicetotal: 1, hitdiceremaining: 1,
+      spellcastingability: "int", spellslots: "000000000000000000",
+      actions: "[]", bonusactions: "[]", otherproficiencies: "[]",
+      features: "[]", inventory: "[]", spells: "[]",
+      characternote: JSON.stringify({ id: Date.now(), title: "Historia", content: "" }),
+      proficiencylist: "[]",
+      ownerid: CURRENT_USER_ID,
+    })
+    .select("id")
+    .single();
+
+  if (error) throw error;
   return { id: newChar.id };
 }
 
-export async function fetchCharacterNotesInCampaign(characterId, campaignId) {
-  await _sim(100);
-  return [];
-}
-
 export async function fetchCharacterSheet(characterId) {
-  await _sim(200);
-  const char = _characters.find(c => c.id === Number(characterId));
-  if (!char) throw new Error(`Personaje con id '${characterId}' no encontrado.`);
-  return _clone(char);
+  const id = Number(characterId);
+  const [{ data: char, error }, { data: links }] = await Promise.all([
+    supabase.from("Character").select("*").eq("id", id).single(),
+    supabase.from("CharacterXCampaign").select("campaignid").eq("characterid", id),
+  ]);
+  if (error || !char) throw new Error(`Personaje ${characterId} no encontrado.`);
+
+  return _deserializeCharacter(char, (links || []).map(l => l.campaignid));
 }
 
 export async function saveCharacterSection(characterId, section, data) {
-  await _sim(200);
-  const idx = _characters.findIndex(c => c.id === Number(characterId));
-  if (idx === -1) return { success: false };
+  const id = Number(characterId);
+  let update = {};
 
   if (section === "core") {
-    // data is DB-format object from toDatabase()
-    Object.assign(_characters[idx], _clone(data));
-  } else if (Array.isArray(data) || typeof data === "object") {
-    _characters[idx][section] = _clone(data);
+    const d = { ...data };
+    delete d.id;
+    if (Array.isArray(d.classes)) d.classes = d.classes.join(",");
+    // toDatabase() outputs camelCase; remap to lowercase Postgres column names
+    const keyMap = {
+      imageUrl:            "imageurl",
+      abilityScores:       "abilityscores",
+      saveProficiencies:   "saveproficiencies",
+      skillProficiencies:  "skillproficiencies",
+      hpMax:               "hpmax",
+      currentHp:           "currenthp",
+      tempHp:              "temphp",
+      hitDiceType:         "hitdicetype",
+      hitDiceTotal:        "hitdicetotal",
+      hitDiceRemaining:    "hitdiceremaining",
+      spellcastingAbility: "spellcastingability",
+      spellSlots:          "spellslots",
+    };
+    update = {};
+    for (const [k, v] of Object.entries(d)) {
+      if (v !== undefined) update[keyMap[k] ?? k] = v;
+    }
+  } else if (section === "inventory") {
+    update = { inventory: _toJSON(data) };
+  } else if (section === "actions") {
+    update = { actions: _toJSON(data) };
+  } else if (section === "bonusActions" || section === "bonus_actions") {
+    update = { bonusactions: _toJSON(data) };
+  } else if (section === "otherProficiencies" || section === "other_proficiencies") {
+    update = { otherproficiencies: _toJSON(data) };
+  } else if (section === "features" || section === "stored_features") {
+    update = { features: _toJSON(data) };
+  } else if (section === "characterNote") {
+    update = { characternote: _toJSON(data) };
+  } else if (section === "spellSlots") {
+    update = { spellslots: serializeSpellSlots(data) };
+  } else if (section === "spellcastingAbility") {
+    update = { spellcastingability: data };
+  } else if (section === "spells") {
+    update = { spells: _toJSON(data) };
+  } else if (section === "spellcasting") {
+    update = {
+      spellcastingability: data.ability,
+      spellslots: serializeSpellSlots(data.slots ?? {}),
+      spells: _toJSON(data.spells ?? []),
+    };
+  } else {
+    update = { [section]: _toJSON(data) };
   }
-  return { success: true };
+
+  const { error } = await supabase.from("Character").update(update).eq("id", id);
+  if (error) console.error("saveCharacterSection error:", error);
+  return { success: !error };
 }
 
-// Sub-data fetched independently by CharacterSheet components
+export async function fetchCharacterNotesInCampaign(_characterId, _campaignId) {
+  return [];
+}
+
 export async function fetchFeatures(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.stored_features || []);
+  const { data } = await supabase
+    .from("Character").select("features").eq("id", Number(characterId)).single();
+  return _parseJSON(data?.features, []);
 }
 
 export async function fetchActions(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.actions || []);
+  const { data } = await supabase
+    .from("Character").select("actions").eq("id", Number(characterId)).single();
+  return _parseJSON(data?.actions, []);
 }
 
 export async function fetchBonusActions(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.bonus_actions || []);
+  const { data } = await supabase
+    .from("Character").select("bonusactions").eq("id", Number(characterId)).single();
+  return _parseJSON(data?.bonusactions, []);
 }
 
 export async function fetchOtherProficiencies(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.other_proficiencies || []);
+  const { data } = await supabase
+    .from("Character").select("otherproficiencies").eq("id", Number(characterId)).single();
+  return _parseJSON(data?.otherproficiencies, []);
 }
 
 export async function fetchSpellcastingData(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.spellcasting || { ability: "int", slots: {}, spells: [] });
+  const { data } = await supabase
+    .from("Character")
+    .select("spellcastingability, spellslots, spells")
+    .eq("id", Number(characterId))
+    .single();
+  return {
+    ability: data?.spellcastingability || "int",
+    slots:   _parseSlots(data?.spellslots || "000000000000000000"),
+    spells:  _parseJSON(data?.spells, []),
+  };
 }
 
 export async function fetchInventory(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.inventory || []);
+  const { data } = await supabase
+    .from("Character").select("inventory").eq("id", Number(characterId)).single();
+  return _parseJSON(data?.inventory, []);
 }
 
 export async function fetchCharacterNote(characterId) {
-  await _sim(100);
-  return _clone(_characters.find(c => c.id === Number(characterId))?.character_note || { id: Date.now(), title: "Historia", content: "" });
+  const { data } = await supabase
+    .from("Character").select("characternote").eq("id", Number(characterId)).single();
+  return _parseJSON(data?.characternote, { id: Date.now(), title: "Historia", content: "" });
 }
 
 export async function fetchCharacterCampaigns(characterId) {
-  await _sim(50);
-  const char = _characters.find(c => c.id === Number(characterId));
-  if (!char) return [];
-  return char.campaign_ids.map(cid => {
-    const camp = _campaigns.find(x => x.id === cid);
-    return camp ? { id: camp.id, name: camp.name } : null;
-  }).filter(Boolean);
+  const { data: links } = await supabase
+    .from("CharacterXCampaign").select("campaignid").eq("characterid", Number(characterId));
+  if (!links?.length) return [];
+
+  const campIds = links.map(l => l.campaignid);
+  const { data: camps } = await supabase.from("Campaign").select("id, name").in("id", campIds);
+  return camps || [];
 }
 
-// ============ CREATURE FUNCTIONS ============
-function _buildBreadcrumb(folderId) {
+export async function addCharacterToCampaign(characterId, campaignId) {
+  await supabase.from("CharacterXCampaign")
+    .upsert(
+      { characterid: Number(characterId), campaignid: Number(campaignId) },
+      { onConflict: "characterid,campaignid", ignoreDuplicates: true }
+    );
+}
+
+export async function removeCharacterFromCampaign(characterId, campaignId) {
+  await supabase.from("CharacterXCampaign")
+    .delete()
+    .eq("characterid", Number(characterId))
+    .eq("campaignid", Number(campaignId));
+}
+
+// ── Creature functions ────────────────────────────────────────────────────────
+function _buildBreadcrumb(folders, folderId) {
   const crumbs = [];
-  let current = _folders.find(f => f.id === folderId);
+  let current = folders.find(f => f.id === folderId);
   while (current) {
     crumbs.unshift({ id: current.id, name: current.name });
-    current = _folders.find(f => f.id === current.parentId);
+    current = folders.find(f => f.id === current.parentfolderid);
   }
   return crumbs;
 }
 
 export async function fetchCreaturesInFolder(folderId = null) {
-  await _sim();
+  const [{ data: allFolders }, creaturesQuery, campaignLinksQuery] = await Promise.all([
+    supabase.from("CreatureFolder").select("*").eq("active", true),
+    folderId == null
+      ? supabase.from("Creature").select("*").is("folderid", null).eq("active", true)
+      : supabase.from("Creature").select("*").eq("folderid", folderId).eq("active", true),
+    supabase.from("CreatureXCampaign").select("creatureid, campaignid"),
+  ]);
+
+  const creatures = creaturesQuery.data || [];
+  const links     = campaignLinksQuery.data || [];
+  const folders   = allFolders || [];
+
+  const numericFolderId = folderId ? Number(folderId) : null;
+
   return {
-    folders: _folders.filter(f => f.parentId === folderId),
-    creatures: _creatures.filter(c => c.folderId === folderId),
-    currentFolder: folderId ? (_folders.find(f => f.id === folderId) || null) : null,
-    breadcrumb: folderId ? _buildBreadcrumb(folderId) : [],
+    folders:       folders.filter(f => f.parentfolderid === numericFolderId),
+    creatures:     creatures.map(c => {
+      const campaignIds = links.filter(l => l.creatureid === c.id).map(l => l.campaignid);
+      return _deserializeCreature(c, campaignIds);
+    }),
+    currentFolder: numericFolderId ? (folders.find(f => f.id === numericFolderId) || null) : null,
+    breadcrumb:    numericFolderId ? _buildBreadcrumb(folders, numericFolderId) : [],
   };
 }
 
 export async function fetchCreature(creatureId) {
-  await _sim();
-  const creature = _creatures.find(c => c.id === creatureId);
-  if (!creature) throw new Error(`Criatura '${creatureId}' no encontrada.`);
-  return _clone(creature);
+  const id = Number(creatureId);
+  const [{ data: row, error }, { data: links }] = await Promise.all([
+    supabase.from("Creature").select("*").eq("id", id).single(),
+    supabase.from("CreatureXCampaign").select("campaignid").eq("creatureid", id),
+  ]);
+  if (error || !row) throw new Error(`Criatura '${creatureId}' no encontrada.`);
+
+  return _deserializeCreature(row, (links || []).map(l => l.campaignid));
 }
 
 export async function saveCreature(id, data) {
-  await _sim(200);
-  const idx = _creatures.findIndex(c => c.id === id);
-  if (idx !== -1) Object.assign(_creatures[idx], _clone(data));
-  return { success: true };
+  const numId = Number(id);
+  const serialized = _serializeCreature(data);
+  delete serialized.ownerid;
+  const { error } = await supabase.from("Creature").update(serialized).eq("id", numId);
+  if (error) console.error("saveCreature error:", error);
+  return { success: !error };
 }
 
 export async function createCreature(data) {
-  await _sim(200);
-  const newCreature = {
-    imageUrl: null, campaignIds: [], savingThrows: [], skills: [],
-    damageImmunities: [], damageResistances: [], conditionImmunities: [],
-    specialTraits: [], actions: [], bonusActions: [], reactions: [],
-    gmNotes: "", playerVisibleNotes: "",
-    ...data,
-    id: `c${_nextCreatureId++}`,
-  };
-  _creatures.push(newCreature);
-  return _clone(newCreature);
+  const payload = _serializeCreature({ ...data, ownerId: CURRENT_USER_ID });
+  const { data: newRow, error } = await supabase
+    .from("Creature").insert(payload).select().single();
+  if (error) throw error;
+
+  const campaignIds = data.campaignIds || [];
+  if (campaignIds.length) {
+    await supabase.from("CreatureXCampaign").insert(
+      campaignIds.map(cid => ({ creatureid: newRow.id, campaignid: cid }))
+    );
+  }
+  return _deserializeCreature(newRow, campaignIds);
 }
 
 export async function createFolder(name, parentId = null) {
-  await _sim(150);
-  const newFolder = { id: `f${_nextFolderId++}`, name, parentId: parentId || null };
-  _folders.push(newFolder);
-  return { ...newFolder };
+  const { data: folder, error } = await supabase
+    .from("CreatureFolder")
+    .insert({ name, parentfolderid: parentId || null, ownerid: CURRENT_USER_ID })
+    .select()
+    .single();
+  if (error) throw error;
+  return { ...folder, parentFolderId: folder.parentfolderid, ownerId: folder.ownerid };
 }
 
-// ============ CREATURE NOTE FUNCTIONS ============
-let _creatureNotes = [
-  { id: "cn1", creatureId: "c1", title: "Tácticas de combate", content: "Usa Escape Nimble para retirarse cuando tiene desventaja. Prefiere atacar en grupo desde la oscuridad.", visibility: "gm", authorId: 1, createdAt: "2024-10-01" },
-  { id: "cn2", creatureId: "c1", title: "Descripción para jugadores", content: "Una criatura pequeña y escurridiza con ojos que brillan en la oscuridad y dientes muy afilados.", visibility: "players_view", authorId: 1, createdAt: "2024-10-01" },
-  { id: "cn3", creatureId: "c4", title: "Origen del esqueleto", content: "Animado por el nigromante que habita la cripta norte. Obedece su voluntad ciegamente.", visibility: "gm", authorId: 1, createdAt: "2024-11-01" },
-  { id: "cn4", creatureId: "c4", title: "Lo que los aventureros saben", content: "Se mueven sin descanso y no sienten dolor. Atacar el cráneo parece la forma más efectiva.", visibility: "players_edit", authorId: 1, createdAt: "2024-11-01" },
-];
-let _nextCreatureNoteId = 5;
+export async function addCreatureToCampaign(creatureId, campaignId) {
+  const cid = Number(creatureId);
+  await supabase
+    .from("CreatureXCampaign")
+    .upsert({ creatureid: cid, campaignid: Number(campaignId) }, { onConflict: "creatureid,campaignid" });
+  return fetchCreature(cid);
+}
 
+export async function removeCreatureFromCampaign(creatureId, campaignId) {
+  const cid = Number(creatureId);
+  await supabase
+    .from("CreatureXCampaign")
+    .delete()
+    .eq("creatureid", cid)
+    .eq("campaignid", Number(campaignId));
+  return fetchCreature(cid);
+}
+
+// ── Creature notes ────────────────────────────────────────────────────────────
 export async function fetchCreatureNotes(creatureId) {
-  await _sim();
-  return _clone(_creatureNotes.filter(n => n.creatureId === creatureId));
+  const { data } = await supabase
+    .from("CreatureNote")
+    .select("*")
+    .eq("creatureid", Number(creatureId))
+    .eq("active", true)
+    .order("createdat", { ascending: false });
+  return _clone(data || []);
 }
 
 export async function createCreatureNote(data) {
-  await _sim(200);
-  const note = { id: `cn${_nextCreatureNoteId++}`, ...data, createdAt: new Date().toISOString().split("T")[0] };
-  _creatureNotes.push(note);
+  const { data: note, error } = await supabase
+    .from("CreatureNote")
+    .insert({
+      creatureid:  Number(data.creatureId),
+      title:       data.title,
+      content:     data.content ?? "",
+      visibility:  data.visibility ?? "gm",
+      authorid:    data.authorId ?? CURRENT_USER_ID,
+    })
+    .select()
+    .single();
+  if (error) throw error;
   return _clone(note);
 }
 
 export async function updateCreatureNote(id, data) {
-  await _sim(200);
-  const idx = _creatureNotes.findIndex(n => n.id === id);
-  if (idx === -1) throw new Error("Nota no encontrada");
-  _creatureNotes[idx] = { ..._creatureNotes[idx], ...data };
-  return _clone(_creatureNotes[idx]);
+  const { data: note, error } = await supabase
+    .from("CreatureNote")
+    .update({ title: data.title, content: data.content, visibility: data.visibility })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error("Nota no encontrada");
+  return _clone(note);
 }
 
 export async function deleteCreatureNote(id) {
-  await _sim(150);
-  _creatureNotes = _creatureNotes.filter(n => n.id !== id);
+  await supabase.from("CreatureNote").update({ active: false }).eq("id", id);
 }
 
-export async function addCreatureToCampaign(creatureId, campaignId) {
-  await _sim();
-  const idx = _creatures.findIndex(c => c.id === creatureId);
-  if (idx === -1) throw new Error("Criatura no encontrada");
-  if (!_creatures[idx].campaignIds.includes(campaignId)) {
-    _creatures[idx] = { ..._creatures[idx], campaignIds: [..._creatures[idx].campaignIds, campaignId] };
-  }
-  return _clone(_creatures[idx]);
-}
-
-export async function removeCreatureFromCampaign(creatureId, campaignId) {
-  await _sim();
-  const idx = _creatures.findIndex(c => c.id === creatureId);
-  if (idx === -1) throw new Error("Criatura no encontrada");
-  _creatures[idx] = { ..._creatures[idx], campaignIds: _creatures[idx].campaignIds.filter(id => id !== campaignId) };
-  return _clone(_creatures[idx]);
-}
-
-// ============ NOTE FUNCTIONS ============
+// ── Campaign note functions ───────────────────────────────────────────────────
 export async function fetchCampaignNotes(campaignId, isGM) {
-  await _sim();
-  const all = _notes.filter(n => n.campaignId === Number(campaignId));
-  const camp = _campaigns.find(c => c.id === Number(campaignId));
+  const numId = Number(campaignId);
+  const { data: camp } = await supabase
+    .from("Campaign").select("name").eq("id", numId).single();
+
+  let query = supabase.from("Note").select("*").eq("campaignid", numId).eq("active", true);
+  if (!isGM) query = query.eq("ispublic", true);
+  const { data: notes } = await query;
+
   return {
     campaign: camp ? { name: camp.name } : { name: `Campaña ${campaignId}` },
-    notes: isGM ? all : all.filter(n => n.isPublic),
+    notes: (notes || []).map(_normNote),
   };
 }
 
 export async function createNote(data) {
-  await _sim();
-  const note = { ...data, id: _nextNoteId++ };
-  _notes.push(note);
-  return _clone(note);
+  const payload = {
+    campaignid: Number(data.campaignId ?? data.campaignid),
+    title:      data.title,
+    content:    data.content ?? "",
+    ispublic:   data.isPublic ?? data.ispublic ?? true,
+    authorid:   data.authorId ?? data.authorid ?? CURRENT_USER_ID,
+    createdat:  data.createdAt ?? data.createdat ?? new Date().toISOString().split("T")[0],
+    active:     true,
+  };
+  const { data: note, error } = await supabase.from("Note").insert(payload).select().single();
+  if (error) throw error;
+  return _normNote(note);
 }
 
 export async function updateNote(id, data) {
-  await _sim();
-  const idx = _notes.findIndex(n => n.id === id);
-  if (idx !== -1) Object.assign(_notes[idx], data);
-  return _clone(_notes[idx]);
+  const update = {
+    title:    data.title,
+    content:  data.content,
+    ispublic: data.isPublic ?? data.ispublic,
+  };
+  const { data: note } = await supabase
+    .from("Note").update(update).eq("id", id).select().single();
+  return note ? _normNote(note) : null;
 }
 
 export async function deleteNote(id) {
-  await _sim();
-  _notes = _notes.filter(n => n.id !== id);
+  await supabase.from("Note").update({ active: false }).eq("id", id);
   return { success: true };
 }
 
-// ============ CHAT FUNCTIONS ============
+// ── Chat functions ────────────────────────────────────────────────────────────
 export async function fetchChatData(campaignId) {
-  await _sim(200);
-  const camp = _campaigns.find(c => c.id === Number(campaignId));
-  const members = _campaignMembers[Number(campaignId)] || { ownerId: null, playerIds: [] };
-  const user = _users[CURRENT_USER_ID];
+  const numId = Number(campaignId);
 
-  // Characters the current user can speak as
-  const userCharacters = _characters
-    .filter(ch => ch.userId === CURRENT_USER_ID && ch.campaign_ids.includes(Number(campaignId)))
-    .map(ch => ({ id: ch.id, name: ch.name, avatar: ch.image_url }));
+  const [
+    { data: camp },
+    { data: members },
+    { data: chat },
+  ] = await Promise.all([
+    supabase.from("Campaign").select("*").eq("id", numId).single(),
+    supabase.from("UserXCampaign").select("userid, role").eq("campaignid", numId),
+    supabase.from("Chat").select("id").eq("campaignid", numId).single(),
+  ]);
 
-  // NPCs = creatures associated with this campaign
-  const npcs = _creatures
-    .filter(c => c.campaignIds.includes(Number(campaignId)))
-    .map(c => ({ id: c.id, name: c.name, creatureId: c.id, avatar: c.imageUrl }));
+  const chatId = chat?.id;
+  const memberIds = (members || []).map(m => m.userid);
+  const gmEntry = (members || []).find(m => m.role === "gm");
 
-  // Online users = other campaign members (excluding current user)
-  const onlineUsers = members.playerIds
-    .filter(id => id !== CURRENT_USER_ID)
-    .map(id => ({ id, username: _users[id]?.username || `User${id}` }));
+  const [
+    { data: users },
+    { data: messages },
+    { data: charLinks },
+    { data: creatureLinks },
+  ] = await Promise.all([
+    supabase.from("User").select("id, username").in("id", memberIds),
+    chatId
+      ? supabase.from("Message").select("*").eq("chatid", chatId).order("timestamp", { ascending: true })
+      : { data: [] },
+    supabase.from("CharacterXCampaign")
+      .select("characterid")
+      .eq("campaignid", numId),
+    supabase.from("CreatureXCampaign")
+      .select("creatureid")
+      .eq("campaignid", numId),
+  ]);
+
+  const myCharIds = (charLinks || []).map(l => l.characterid);
+  let userCharacters = [];
+  if (myCharIds.length) {
+    const { data: chars } = await supabase
+      .from("Character")
+      .select("id, name, imageurl, ownerid")
+      .in("id", myCharIds)
+      .eq("ownerid", CURRENT_USER_ID);
+    userCharacters = (chars || []).map(ch => ({ id: ch.id, name: ch.name, avatar: ch.imageurl }));
+  }
+
+  const npcIds = (creatureLinks || []).map(l => l.creatureid);
+  let npcs = [];
+  if (npcIds.length) {
+    const { data: creatures } = await supabase
+      .from("Creature").select("id, name, imageurl").in("id", npcIds);
+    npcs = (creatures || []).map(c => ({ id: c.id, name: c.name, creatureId: c.id, avatar: c.imageurl }));
+  }
+
+  const onlineUsers = (users || [])
+    .filter(u => u.id !== CURRENT_USER_ID)
+    .map(u => ({ id: u.id, username: u.username }));
 
   return {
-    campaign: camp || { id: campaignId, name: `Campaña ${campaignId}` },
-    currentUser: { id: user.id, username: user.username, isGM: members.ownerId === CURRENT_USER_ID },
-    messages: _clone(_messages[Number(campaignId)] || []),
+    campaign:     camp ? _normCampaign(camp) : { id: campaignId, name: `Campaña ${campaignId}` },
+    currentUser:  { id: CURRENT_USER_ID, username: (users || []).find(u => u.id === CURRENT_USER_ID)?.username ?? "", isGM: gmEntry?.userid === CURRENT_USER_ID },
+    messages:     (messages || []).map(_normMessage),
     userCharacters,
     npcs,
     onlineUsers,
@@ -800,87 +923,151 @@ export async function fetchChatData(campaignId) {
 }
 
 export async function sendMessage(campaignId, messageData) {
-  await _sim(100);
-  const newMsg = {
-    id: _nextMessageId++,
-    chatId: Number(campaignId),
-    senderId:        messageData.senderId,
-    senderUsername:  messageData.senderUsername,
-    characterId:     messageData.characterId     || null,
-    characterName:   messageData.characterName   || null,
-    characterAvatar: messageData.characterAvatar || null,
-    type:            messageData.type,
-    content:         messageData.content,
-    timestamp:       new Date().toISOString(),
-    isWhisper:       messageData.isWhisper  || false,
-    whisperTo:       messageData.whisperTo  || null,
-  };
-  if (!_messages[Number(campaignId)]) _messages[Number(campaignId)] = [];
-  _messages[Number(campaignId)].push(newMsg);
-  return _clone(newMsg);
+  const numId = Number(campaignId);
+  const { data: chat } = await supabase
+    .from("Chat").select("id").eq("campaignid", numId).single();
+
+  const chatId = chat?.id;
+  if (!chatId) throw new Error("Chat not found for campaign " + campaignId);
+
+  const content = typeof messageData.content === "object"
+    ? JSON.stringify(messageData.content)
+    : messageData.content;
+
+  const { data: newMsg, error } = await supabase
+    .from("Message")
+    .insert({
+      chatid:          chatId,
+      senderid:        messageData.senderId,
+      senderusername:  messageData.senderUsername,
+      characterid:     Number.isInteger(messageData.characterId) ? messageData.characterId : null,
+      charactername:   messageData.characterName   || null,
+      characteravatar: messageData.characterAvatar || null,
+      type:            messageData.type,
+      content,
+      iswhisper:       messageData.isWhisper  || false,
+      whisperto:       messageData.whisperTo  || null,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return _normMessage(newMsg);
 }
 
-// ============ PROFILE FUNCTIONS ============
+// ── Profile functions ─────────────────────────────────────────────────────────
 export async function fetchProfile(userId = CURRENT_USER_ID) {
-  await _sim();
-  const user = _users[userId];
-  if (!user) throw new Error(`Usuario ${userId} no encontrado.`);
-  const { password: _pw, ...safeUser } = user;
+  const { data: user, error } = await supabase
+    .from("User").select("*").eq("id", userId).single();
+  if (error || !user) throw new Error(`Usuario ${userId} no encontrado.`);
 
-  // Compute stats from real data
-  const userCampaigns = _campaigns.filter(c =>
-    c.ownerId === userId || (_campaignMembers[c.id]?.playerIds || []).includes(userId)
-  );
-  const userChars = _characters.filter(c => c.userId === userId);
-  const userNotes = _notes.filter(n => n.authorId === userId);
+  const [{ data: memberships }, { data: chars }, { data: notes }, { data: msgs }] = await Promise.all([
+    supabase.from("UserXCampaign").select("campaignid").eq("userid", userId),
+    supabase.from("Character").select("id").eq("ownerid", userId).eq("active", true),
+    supabase.from("Note").select("id").eq("authorid", userId).eq("active", true),
+    supabase.from("Message").select("chatid").eq("senderid", userId),
+  ]);
+
+  const uniqueChats = new Set((msgs || []).map(m => m.chatid));
 
   return {
-    ...safeUser,
+    ..._normUser(user),
     stats: {
-      campaigns:    userCampaigns.length,
-      characters:   userChars.length,
-      sessions:     userCampaigns.reduce((acc, c) => acc + (_messages[c.id]?.length || 0), 0), // approx
-      notesWritten: userNotes.length,
+      campaigns:    (memberships || []).length,
+      characters:   (chars       || []).length,
+      sessions:     uniqueChats.size,
+      notesWritten: (notes       || []).length,
     },
   };
 }
 
 export async function saveProfile(data, userId = CURRENT_USER_ID) {
-  await _sim(200);
-  const { stats: _s, password: _p, ...editable } = data;
-  Object.assign(_users[userId], editable);
+  const update = {};
+  if (data.displayName  !== undefined) update.displayname = data.displayName;
+  if (data.displayname  !== undefined) update.displayname = data.displayname;
+  if (data.bio          !== undefined) update.bio         = data.bio;
+  if (data.avatarUrl    !== undefined) update.avatarurl   = data.avatarUrl;
+  if (data.avatarurl    !== undefined) update.avatarurl   = data.avatarurl;
+  await supabase.from("User").update(update).eq("id", userId);
   return fetchProfile(userId);
 }
 
-// ============ PLANNER FUNCTIONS ============
+// ── Planner functions ─────────────────────────────────────────────────────────
 export async function fetchPlanner(campaignId) {
-  await _sim();
-  const playerIds = _campaignMembers[Number(campaignId)]?.playerIds ?? [];
+  const { data: members } = await supabase
+    .from("UserXCampaign").select("userid").eq("campaignid", Number(campaignId));
+  const playerIds = (members || []).map(m => m.userid);
+
+  const { data: users } = await supabase
+    .from("User").select("id, username").in("id", playerIds);
+
+  const weekDays = getWeekDays(new Date());
+  const { data: avail } = await supabase
+    .from("Availability")
+    .select("userid, date, slots")
+    .in("userid", playerIds)
+    .gte("date", weekDays[0])
+    .lte("date", weekDays[6]);
+
+  function _groupAvail(uid) {
+    const byDate = {};
+    (avail || []).filter(a => a.userid === uid).forEach(a => {
+      byDate[a.date] = _parseComma(a.slots);
+    });
+    return byDate;
+  }
+
   const participants = playerIds.map(uid => ({
-    userId: uid,
-    username: _users[uid]?.username || `User${uid}`,
-    availability: _clone(_availability[uid] || {}),
+    userId:       uid,
+    username:     (users || []).find(u => u.id === uid)?.username || `User${uid}`,
+    availability: _groupAvail(uid),
   }));
+
   return {
     participants,
-    currentUserId: CURRENT_USER_ID,
-    currentUserAvailability: _clone(_availability[CURRENT_USER_ID] || {}),
+    currentUserId:            CURRENT_USER_ID,
+    currentUserAvailability:  _groupAvail(CURRENT_USER_ID),
   };
 }
 
 export async function toggleSlot(date, slotId) {
-  await _sim(100);
-  const slots = _availability[CURRENT_USER_ID]?.[date] || [];
-  if (!_availability[CURRENT_USER_ID]) _availability[CURRENT_USER_ID] = {};
-  if (slots.includes(slotId)) {
-    _availability[CURRENT_USER_ID][date] = slots.filter(s => s !== slotId);
-    if (_availability[CURRENT_USER_ID][date].length === 0) delete _availability[CURRENT_USER_ID][date];
-  } else {
-    _availability[CURRENT_USER_ID][date] = [...slots, slotId];
-  }
-  return _clone(_availability[CURRENT_USER_ID]);
-}
+  const { data: existing } = await supabase
+    .from("Availability")
+    .select("id, slots")
+    .eq("userid", CURRENT_USER_ID)
+    .eq("date", date)
+    .single();
 
-export function computeOverlap(participants, date, slotId) {
-  return participants.filter(p => p.availability[date]?.includes(slotId)).length;
+  const current = existing ? _parseComma(existing.slots) : [];
+  let updated;
+  if (current.includes(slotId)) {
+    updated = current.filter(s => s !== slotId);
+  } else {
+    updated = [...current, slotId];
+  }
+
+  if (existing) {
+    if (updated.length === 0) {
+      await supabase.from("Availability").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("Availability")
+        .update({ slots: updated.join(",") })
+        .eq("id", existing.id);
+    }
+  } else if (updated.length > 0) {
+    await supabase.from("Availability")
+      .insert({ userid: CURRENT_USER_ID, date, slots: updated.join(",") });
+  }
+
+  const weekDays = getWeekDays(new Date());
+  const { data: allAvail } = await supabase
+    .from("Availability")
+    .select("date, slots")
+    .eq("userid", CURRENT_USER_ID)
+    .gte("date", weekDays[0])
+    .lte("date", weekDays[6]);
+
+  const result = {};
+  (allAvail || []).forEach(a => { result[a.date] = _parseComma(a.slots); });
+  return result;
 }

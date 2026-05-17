@@ -33,6 +33,13 @@ const AbilityScoresSection = ({ scores, modifiers, savingThrows, saveProficienci
     setEditedScores(prev => ({ ...prev, [ability]: parseInt(value) || 0 }));
   };
 
+  const toggleSaveProficiency = (ab) => {
+    const updated = saveProficiencies.includes(ab)
+      ? saveProficiencies.filter(x => x !== ab)
+      : [...saveProficiencies, ab];
+    onSave({ saveProficiencies: updated });
+  };
+
   return (
     <section className="sheet-section ability-scores-section" aria-labelledby="ability-scores-heading">
       <div className="ability-scores-header-row">
@@ -49,6 +56,7 @@ const AbilityScoresSection = ({ scores, modifiers, savingThrows, saveProficienci
         <span>Hab.</span>
         <span>Punt.</span>
         <span>Mod.</span>
+        <span title="Competencia en tirada de salvación">Prof.</span>
         <span>Sal.</span>
       </div>
 
@@ -58,10 +66,7 @@ const AbilityScoresSection = ({ scores, modifiers, savingThrows, saveProficienci
           const saveVal = savingThrows?.[ab];
           return (
             <div key={ab} className="ability-item">
-              <span
-                className="ability-name"
-                title={ABILITY_NAMES[ab]}
-              >
+              <span className="ability-name" title={ABILITY_NAMES[ab]}>
                 {ab.toUpperCase()}
               </span>
 
@@ -70,8 +75,7 @@ const AbilityScoresSection = ({ scores, modifiers, savingThrows, saveProficienci
                   type="number"
                   value={editedScores[ab]}
                   onChange={e => handleScoreChange(ab, e.target.value)}
-                  min="1"
-                  max="30"
+                  min="1" max="30"
                   className="score-input"
                   aria-label={`${ABILITY_NAMES[ab]} puntuación`}
                 />
@@ -85,11 +89,20 @@ const AbilityScoresSection = ({ scores, modifiers, savingThrows, saveProficienci
                 {fmt(modifiers[ab])}
               </span>
 
+              <input
+                type="checkbox"
+                className="save-prof-checkbox"
+                checked={isSaveProficient}
+                onChange={() => toggleSaveProficiency(ab)}
+                aria-label={`Competencia en salvación de ${ABILITY_NAMES[ab]}`}
+                title={`Competencia en salvación de ${ABILITY_NAMES[ab]}`}
+              />
+
               <span
                 className={`save-value ${isSaveProficient ? "save-proficient" : ""}`}
                 title={`Salvación de ${ABILITY_NAMES[ab]}${isSaveProficient ? " (competente)" : ""}`}
               >
-                {saveVal !== undefined ? fmt(saveVal) : "—"}
+                {saveVal !== undefined ? fmt(saveVal) : fmt(modifiers[ab] ?? 0)}
               </span>
             </div>
           );

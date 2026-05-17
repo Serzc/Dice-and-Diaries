@@ -1,0 +1,101 @@
+table_name,column_name,data_type,is_nullable
+Availability,id,integer,NO
+Availability,userid,integer,NO
+Availability,date,date,NO
+Availability,slots,character varying,NO
+Campaign,id,integer,NO
+Campaign,name,character varying,NO
+Campaign,description,character varying,YES
+Campaign,imageurl,character varying,YES
+Campaign,active,boolean,NO
+Campaign,ownerid,integer,NO
+Campaign,invitecode,character varying,YES
+CampaignNoteFolder,id,integer,NO
+CampaignNoteFolder,name,character varying,NO
+CampaignNoteFolder,campaignid,integer,NO
+CampaignNoteFolder,parentfolderid,integer,YES
+Character,id,integer,NO
+Character,name,character varying,NO
+Character,classes,character varying,NO
+Character,species,character varying,NO
+Character,background,character varying,NO
+Character,level,smallint,NO
+Character,imageurl,character varying,YES
+Character,abilityscores,character varying,NO
+Character,saveproficiencies,character varying,NO
+Character,skillproficiencies,character varying,NO
+Character,speed,smallint,NO
+Character,hpmax,smallint,NO
+Character,currenthp,smallint,NO
+Character,temphp,smallint,NO
+Character,hitdicetype,character varying,NO
+Character,hitdicetotal,smallint,NO
+Character,hitdiceremaining,smallint,NO
+Character,spellcastingability,character varying,YES
+Character,spellslots,character varying,NO
+Character,actions,character varying,YES
+Character,bonusactions,character varying,YES
+Character,otherproficiencies,character varying,YES
+Character,features,character varying,YES
+Character,active,boolean,NO
+Character,ownerid,integer,NO
+Character,inventory,character varying,YES
+Character,spells,character varying,YES
+Character,characternote,character varying,YES
+Character,proficiencylist,character varying,YES
+CharacterXCampaign,id,integer,NO
+CharacterXCampaign,characterid,integer,NO
+CharacterXCampaign,campaignid,integer,NO
+Chat,id,integer,NO
+Chat,campaignid,integer,NO
+Chat,active,boolean,NO
+Creature,id,integer,NO
+Creature,name,character varying,NO
+Creature,size,character varying,NO
+Creature,creaturetype,character varying,NO
+Creature,alignment,character varying,YES
+Creature,cr,character varying,YES
+Creature,ac,smallint,NO
+Creature,acnote,character varying,YES
+Creature,hpmax,smallint,NO
+Creature,currenthp,smallint,NO
+Creature,hpformula,character varying,YES
+Creature,speed,character varying,NO
+Creature,abilityscores,character varying,NO
+Creature,savingthrows,character varying,YES
+Creature,skills,character varying,YES
+Creature,damageimmunities,character varying,YES
+Creature,damageresistances,character varying,YES
+Creature,conditionimmunities,character varying,YES
+Creature,senses,character varying,YES
+Creature,languages,character varying,YES
+Creature,specialtraits,character varying,YES
+Creature,actions,character varying,YES
+Creature,bonusactions,character varying,YES
+Creature,reactions,character varying,YES
+Creature,gmnotes,character varying,YES
+Creature,playervisiblenotes,character varying,YES
+Creature,active,boolean,NO
+Creature,ownerid,integer,NO
+Creature,folderid,integer,YES
+Creature,imageurl,character varying,YES
+CreatureFolder,id,integer,NO
+CreatureFolder,name,character varying,NO
+CreatureFolder,parentfolderid,integer,YES
+CreatureFolder,ownerid,integer,NO
+CreatureFolder,active,boolean,NO
+CreatureFolderContent,id,integer,NO
+CreatureFolderContent,folderid,integer,NO
+CreatureFolderContent,creatureid,integer,NO
+CreatureNote,id,integer,NO
+CreatureNote,creatureid,integer,NO
+CreatureNote,title,character varying,NO
+CreatureNote,content,character varying,YES
+CreatureNote,visibility,character varying,NO
+CreatureNote,authorid,integer,NO
+CreatureNote,createdat,date,NO
+CreatureNote,active,boolean,NO
+CreatureXCampaign,id,integer,NO
+CreatureXCampaign,creatureid,integer,NO
+CreatureXCampaign,campaignid,integer,NO
+Item,id,integer,NO

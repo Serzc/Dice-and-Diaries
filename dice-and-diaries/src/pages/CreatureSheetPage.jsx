@@ -6,6 +6,7 @@ import {
   fetchCreatureNotes, createCreatureNote, updateCreatureNote, deleteCreatureNote,
   addCreatureToCampaign, removeCreatureFromCampaign,
 } from "../mock/db";
+import { useAuth } from "../context/AuthContext";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import "../components/common/Popup.css";
 import "./CreatureSheetPage.css";
@@ -464,6 +465,7 @@ const CampaignPickerPopup = ({ campaigns, onPick, onClose }) => {
 const CreatureSheetPage = () => {
   const { creatureId } = useParams();
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
 
   const [creature, setCreature] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -484,7 +486,8 @@ const CreatureSheetPage = () => {
   const [allCampaigns, setAllCampaigns] = useState([]);
 
   const originalRef = useRef(null);
-  const isGM = currentUser.isGM;
+  const isOwner = creature != null && creature.ownerId === authUser?.id;
+  const isGM = (authUser?.isGM ?? false) || isOwner;
 
   // ── Data fetch ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -787,7 +790,7 @@ const CreatureSheetPage = () => {
           note={editingNote}
           creatureId={creature.id}
           isGM={isGM}
-          currentUserId={currentUser.id}
+          currentUserId={authUser?.id ?? currentUser.id}
           onClose={() => setEditingNote(undefined)}
           onSaved={handleNoteSaved}
         />
