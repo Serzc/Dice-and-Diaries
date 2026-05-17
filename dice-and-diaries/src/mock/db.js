@@ -586,6 +586,32 @@ export async function saveCharacterSection(characterId, section, data) {
   return { success: !error };
 }
 
+export async function uploadCharacterImage(characterId, file) {
+  const ext = file.name.split(".").pop();
+  const path = `${characterId}/${Date.now()}.${ext}`;
+  const { error: upErr } = await supabase.storage
+    .from("character-images")
+    .upload(path, file, { upsert: true });
+  if (upErr) throw upErr;
+  const { data } = supabase.storage.from("character-images").getPublicUrl(path);
+  const url = data.publicUrl;
+  await supabase.from("Character").update({ imageurl: url }).eq("id", Number(characterId));
+  return url;
+}
+
+export async function uploadCampaignImage(campaignId, file) {
+  const ext = file.name.split(".").pop();
+  const path = `${campaignId}/${Date.now()}.${ext}`;
+  const { error: upErr } = await supabase.storage
+    .from("campaign-images")
+    .upload(path, file, { upsert: true });
+  if (upErr) throw upErr;
+  const { data } = supabase.storage.from("campaign-images").getPublicUrl(path);
+  const url = data.publicUrl;
+  await supabase.from("Campaign").update({ imageurl: url }).eq("id", Number(campaignId));
+  return url;
+}
+
 export async function fetchCharacterNotesInCampaign(_characterId, _campaignId) {
   return [];
 }

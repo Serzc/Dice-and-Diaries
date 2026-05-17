@@ -1,10 +1,28 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
+import { uploadCampaignImage } from "../../mock/db";
 import "./CampaignCard.css";
 
-const CampaignCard = ({ campaign, isGM, onStartSession, onDelete, onNotesClick }) => {
+const CampaignCard = ({ campaign, isGM, onStartSession, onDelete, onNotesClick, onImageUpdated }) => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadCampaignImage(campaign.id, file);
+      onImageUpdated && onImageUpdated({ ...campaign, imageUrl: url });
+    } catch (err) {
+      console.error("Error al subir imagen:", err);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
 
   return (
     <Card className={`campaign-card ${isGM ? "campaign-card--gm" : ""}`} role="listitem" aria-labelledby={`campaign-${campaign.id}-name`}>
@@ -49,6 +67,21 @@ const CampaignCard = ({ campaign, isGM, onStartSession, onDelete, onNotesClick }
                 aria-label={`Gestionar jugadores de ${campaign.name}`}
               >
                 Jugadores
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImageChange}
+              />
+              <button
+                className="campaign-nav-btn"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                aria-label={`Cambiar imagen de ${campaign.name}`}
+              >
+                {uploading ? "..." : "Imagen"}
               </button>
               <button
                 className="campaign-nav-btn campaign-nav-btn--danger"

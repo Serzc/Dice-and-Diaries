@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Button from "../common/Button";
+import { uploadCharacterImage } from "../../mock/db";
 import "./GeneralInfo.css";
 
 const GeneralInfo = ({ character, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
   const [edited, setEdited] = useState({
     name: character.name,
     classes: character.classes.join(" / "), // se muestra como string
@@ -14,15 +18,14 @@ const GeneralInfo = ({ character, onSave }) => {
 
   const handleEditToggle = () => {
     if (isEditing) {
-      // Guardar cambios: convertir clases a array
       const updated = {
         ...edited,
         classes: edited.classes.split("/").map(c => c.trim()).filter(Boolean),
       };
       onSave({ name: updated.name, classes: updated.classes, species: updated.species, background: updated.background, level: updated.level });
       setIsEditing(false);
+      setPreviewUrl(null);
     } else {
-      // Reiniciar campos al estado actual del personaje
       setEdited({
         name: character.name,
         classes: character.classes.join(" / "),
@@ -31,6 +34,22 @@ const GeneralInfo = ({ character, onSave }) => {
         level: character.level,
       });
       setIsEditing(true);
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPreviewUrl(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const url = await uploadCharacterImage(character.id, file);
+      onSave({ imageUrl: url });
+    } catch (err) {
+      console.error("Error al subir imagen:", err);
+      setPreviewUrl(null);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -121,11 +140,31 @@ const GeneralInfo = ({ character, onSave }) => {
           </div>
           <div className="character-portrait">
             <img
-              src={character.imageUrl}
+              src={previewUrl ?? character.imageUrl}
               alt={`Retrato de ${character.name}`}
               className="portrait-image"
             />
           </div>
+          {isEditing && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImageChange}
+              />
+              <button
+                type="button"
+                className="portrait-upload-btn"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                aria-label="Cambiar imagen del personaje"
+              >
+                {uploading ? "Subiendo..." : "Cambiar imagen"}
+              </button>
+            </>
+          )}
           <div className="edit-button-wrapper">
             <Button
               onClick={handleEditToggle}

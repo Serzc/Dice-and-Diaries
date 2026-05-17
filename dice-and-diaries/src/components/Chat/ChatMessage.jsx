@@ -4,7 +4,7 @@ import "./ChatMessage.css";
 const ChatMessage = ({ message, isOwnMessage }) => {
   const isInCharacter = message.characterId !== null;
   const senderDisplay = isInCharacter
-    ? `${message.characterName} (${message.senderUsername})`
+    ? message.characterName
     : message.senderUsername;
 
   const renderContent = () => {

@@ -146,6 +146,7 @@ const ChatPage = () => {
           onSendAbilityAppend={handleSendAbilityAppend}
           onNoteCreated={(note) => setNotes((prev) => [note, ...prev])}
           onPossessNPC={setPossessedNPC}
+          onPossessCharacter={(char) => setPossessedNPC({ id: char.id, name: char.name, avatar: char.avatar ?? null })}
         />
       )}
     </div>
