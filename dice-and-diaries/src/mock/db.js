@@ -939,6 +939,7 @@ export async function fetchChatData(campaignId) {
     .map(u => ({ id: u.id, username: u.username }));
 
   return {
+    chatId,
     campaign:     camp ? _normCampaign(camp) : { id: campaignId, name: `Campaña ${campaignId}` },
     currentUser:  { id: CURRENT_USER_ID, username: (users || []).find(u => u.id === CURRENT_USER_ID)?.username ?? "", isGM: gmEntry?.userid === CURRENT_USER_ID },
     messages:     (messages || []).map(_normMessage),
@@ -946,6 +947,18 @@ export async function fetchChatData(campaignId) {
     npcs,
     onlineUsers,
   };
+}
+
+export function subscribeToChatMessages(chatId, onInsert) {
+  const channel = supabase
+    .channel(`chat-${chatId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "Message", filter: `chatid=eq.${chatId}` },
+      (payload) => onInsert(_normMessage(payload.new))
+    )
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 }
 
 export async function sendMessage(campaignId, messageData) {

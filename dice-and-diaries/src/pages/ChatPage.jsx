@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { fetchChatData, fetchCampaignNotes, sendMessage as sendMessageApi } from "../mock/db";
+import { fetchChatData, fetchCampaignNotes, sendMessage as sendMessageApi, subscribeToChatMessages } from "../mock/db";
 import ChatMessage from "../components/Chat/ChatMessage";
 import ChatInput from "../components/Chat/ChatInput";
 import ChatSidebar from "../components/Chat/ChatSidebar";
@@ -22,14 +22,30 @@ const ChatPage = () => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    let unsubscribe = null;
+    let cancelled = false;
+
     const load = async () => {
       const data = await fetchChatData(campaignId);
+      if (cancelled) return;
       setChatData(data);
       setMessages(data.messages);
       const notesData = await fetchCampaignNotes(campaignId, data.currentUser.isGM);
+      if (cancelled) return;
       setNotes(notesData.notes || []);
+
+      unsubscribe = subscribeToChatMessages(data.chatId, (newMsg) => {
+        setMessages(prev =>
+          prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]
+        );
+      });
     };
+
     load();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, [campaignId]);
 
   useEffect(() => {
