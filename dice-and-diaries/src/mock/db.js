@@ -289,7 +289,7 @@ export async function loginUser(username, password) {
 export async function fetchCampaigns(userId = CURRENT_USER_ID) {
   const { data: memberships } = await supabase
     .from("UserXCampaign")
-    .select("campaignid")
+    .select("campaignid, role")
     .eq("userid", userId);
 
   const ids = (memberships || []).map(m => m.campaignid);
@@ -306,12 +306,14 @@ export async function fetchCampaigns(userId = CURRENT_USER_ID) {
   return (campaigns || []).map(c => {
     const members   = (allMembers   || []).filter(m => m.campaignid === c.id);
     const playerIds = members.map(m => m.userid);
+    const myRole    = (memberships  || []).find(m => Number(m.campaignid) === Number(c.id))?.role ?? null;
     return {
       ..._normCampaign(c),
       players:      playerIds,
       playersCount: playerIds.length,
       npcsCount:    (creatureLinks || []).filter(cr => cr.campaignid === c.id).length,
       notesCount:   (notes         || []).filter(n  => n.campaignid  === c.id).length,
+      myRole,
     };
   });
 }
@@ -740,6 +742,10 @@ export async function fetchCreature(creatureId) {
 
 export async function saveCreature(id, data) {
   const numId = Number(id);
+  const { data: row } = await supabase.from("Creature").select("ownerid").eq("id", numId).single();
+  if (!row || Number(row.ownerid) !== Number(CURRENT_USER_ID)) {
+    return { success: false, error: "No autorizado" };
+  }
   const serialized = _serializeCreature(data);
   delete serialized.ownerid;
   const { error } = await supabase.from("Creature").update(serialized).eq("id", numId);
@@ -773,6 +779,15 @@ export async function createFolder(name, parentId = null) {
 }
 
 export async function addCreatureToCampaign(creatureId, campaignId) {
+  const { data: membership } = await supabase
+    .from("UserXCampaign")
+    .select("role")
+    .eq("userid", CURRENT_USER_ID)
+    .eq("campaignid", Number(campaignId))
+    .single();
+  if (!membership || membership.role !== "gm") {
+    throw new Error("Solo los DMs pueden añadir criaturas a la campaña");
+  }
   const cid = Number(creatureId);
   await supabase
     .from("CreatureXCampaign")

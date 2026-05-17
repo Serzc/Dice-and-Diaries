@@ -268,10 +268,12 @@ const TraitsSection = ({ traits, title, isEditing, onChangeTraits }) => {
 };
 
 // ── Campaign assignment section ────────────────────────────────────────────────
-const CampaignsSection = ({ creature, allCampaigns, onAdd, onRemove }) => {
+const CampaignsSection = ({ creature, allCampaigns, gmCampaigns, canManage, onAdd, onRemove }) => {
   const [pickerOpen, setPickerOpen] = useState(false);
   const assigned = (creature.campaignIds || []);
-  const available = allCampaigns.filter((c) => !assigned.includes(c.id));
+  // Picker only shows GM campaigns the creature isn't already in
+  const available = (gmCampaigns || []).filter((c) => !assigned.includes(c.id));
+  const gmCampaignIds = new Set((gmCampaigns || []).map((c) => c.id));
 
   return (
     <div className="stat-block-section">
@@ -285,19 +287,21 @@ const CampaignsSection = ({ creature, allCampaigns, onAdd, onRemove }) => {
             return camp ? (
               <span key={cid} className="sb-campaign-chip">
                 {camp.name}
-                <button
-                  className="sb-chip-remove"
-                  onClick={() => onRemove(cid)}
-                  aria-label={`Quitar de ${camp.name}`}
-                >
-                  &#x2715;
-                </button>
+                {canManage && gmCampaignIds.has(cid) && (
+                  <button
+                    className="sb-chip-remove"
+                    onClick={() => onRemove(cid)}
+                    aria-label={`Quitar de ${camp.name}`}
+                  >
+                    &#x2715;
+                  </button>
+                )}
               </span>
             ) : null;
           })
         )}
       </div>
-      {available.length > 0 && (
+      {canManage && available.length > 0 && (
         pickerOpen ? (
           <select
             className="sb-select sb-campaign-select"
@@ -486,8 +490,13 @@ const CreatureSheetPage = () => {
   const [allCampaigns, setAllCampaigns] = useState([]);
 
   const originalRef = useRef(null);
-  const isOwner = creature != null && creature.ownerId === authUser?.id;
-  const isGM = (authUser?.isGM ?? false) || isOwner;
+  const isOwner = creature != null &&
+    creature.ownerId != null &&
+    authUser?.id != null &&
+    Number(creature.ownerId) === Number(authUser.id);
+  const isGM = (authUser?.isGM ?? false);
+  const canEdit = isOwner;
+  const gmCampaigns = allCampaigns.filter((c) => c.myRole === "gm");
 
   // ── Data fetch ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -612,27 +621,27 @@ const CreatureSheetPage = () => {
           </div>
         </div>
         <div className="csh-right">
+          {canEdit && (
+            isEditing ? (
+              <>
+                <button className="cs-btn cs-btn-secondary" onClick={handleCancel}>Cancelar</button>
+                <button className="cs-btn cs-btn-primary" onClick={handleSave} disabled={saving}>
+                  {saving ? "Guardando..." : "Guardar"}
+                </button>
+              </>
+            ) : (
+              <button className="cs-btn cs-btn-secondary" onClick={startEditing}>Editar</button>
+            )
+          )}
           {isGM && (
-            <>
-              {isEditing ? (
-                <>
-                  <button className="cs-btn cs-btn-secondary" onClick={handleCancel}>Cancelar</button>
-                  <button className="cs-btn cs-btn-primary" onClick={handleSave} disabled={saving}>
-                    {saving ? "Guardando..." : "Guardar"}
-                  </button>
-                </>
-              ) : (
-                <button className="cs-btn cs-btn-secondary" onClick={startEditing}>Editar</button>
-              )}
-              <button
-                className="cs-btn cs-btn-possess"
-                onClick={handlePossess}
-                disabled={!creature?.campaignIds?.length}
-                title={!creature?.campaignIds?.length ? "Sin campañas asignadas" : "Poseer criatura en el chat"}
-              >
-                Poseer
-              </button>
-            </>
+            <button
+              className="cs-btn cs-btn-possess"
+              onClick={handlePossess}
+              disabled={!creature?.campaignIds?.length}
+              title={!creature?.campaignIds?.length ? "Sin campañas asignadas" : "Poseer criatura en el chat"}
+            >
+              Poseer
+            </button>
           )}
         </div>
       </div>
@@ -689,30 +698,36 @@ const CreatureSheetPage = () => {
               <TraitsSection traits={creature.reactions} title="Reacciones" isEditing={isEditing}
                 onChangeTraits={(v) => handleChange({ reactions: v })} /></>)}
 
-            {/* GM notes (inline, always editable) */}
-            {isGM && (
+            {/* GM notes (owner: editable; other GMs: read-only) */}
+            {(isGM || isOwner) && (
               <>
                 <div className="sb-divider" />
                 <div className="stat-block-section">
                   <h3 className="sb-section-title">Notas del DM (privadas)</h3>
-                  <textarea
-                    className="sb-notes-textarea"
-                    value={creature.gmNotes || ""}
-                    onChange={(e) => handleChange({ gmNotes: e.target.value })}
-                    rows={4}
-                    placeholder="Notas privadas del DM..."
-                  />
+                  {canEdit ? (
+                    <textarea
+                      className="sb-notes-textarea"
+                      value={creature.gmNotes || ""}
+                      onChange={(e) => handleChange({ gmNotes: e.target.value })}
+                      rows={4}
+                      placeholder="Notas privadas del DM..."
+                    />
+                  ) : (
+                    <p className="sb-notes-readonly">{creature.gmNotes || <em>Sin notas</em>}</p>
+                  )}
                 </div>
               </>
             )}
 
-            {/* Campaign assignment (GM only) */}
-            {isGM && (
+            {/* Campaign assignment: visible to GM users, add/remove only for their own GM campaigns */}
+            {(isGM || isOwner) && (
               <>
                 <div className="sb-divider" />
                 <CampaignsSection
                   creature={creature}
                   allCampaigns={allCampaigns}
+                  gmCampaigns={gmCampaigns}
+                  canManage={isGM}
                   onAdd={handleAddCampaign}
                   onRemove={handleRemoveCampaign}
                 />

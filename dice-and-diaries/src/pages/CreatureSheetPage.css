@@ -416,6 +416,14 @@ body:has(.creature-sheet-page) #root {
   cursor: default;
 }
 
+.sb-notes-readonly {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
 /* ==================== Edit mode ==================== */
 
 /* Rows in stat-block header edit mode */
