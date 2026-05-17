@@ -10,6 +10,7 @@ const LoginForm = () => {
 
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -19,6 +20,7 @@ const LoginForm = () => {
     setMode(next);
     setErrors({});
     setUsername("");
+    setEmail("");
     setPassword("");
     setConfirmPassword("");
   };
@@ -28,6 +30,8 @@ const LoginForm = () => {
     if (!username.trim()) e.username = "El nombre de usuario es obligatorio";
     if (!password)        e.password = "La contraseña es obligatoria";
     if (mode === "register") {
+      if (!email.trim())                   e.email = "El correo electrónico es obligatorio";
+      else if (!/\S+@\S+\.\S+/.test(email)) e.email = "Correo electrónico inválido";
       if (password && password.length < 6) e.password = "La contraseña debe tener al menos 6 caracteres";
       if (password !== confirmPassword)    e.confirmPassword = "Las contraseñas no coinciden";
     }
@@ -44,7 +48,7 @@ const LoginForm = () => {
       if (mode === "login") {
         await login(username.trim(), password);
       } else {
-        await register(username.trim(), password);
+        await register(username.trim(), email.trim(), password);
       }
       navigate("/");
     } catch (err) {
@@ -73,6 +77,17 @@ const LoginForm = () => {
           onChange={(e) => setUsername(e.target.value)}
           error={errors.username}
         />
+        {isRegister && (
+          <FormInput
+            label="Correo electrónico"
+            name="email"
+            type="email"
+            placeholder="correo@ejemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={errors.email}
+          />
+        )}
         <FormInput
           label="Contraseña"
           name="password"

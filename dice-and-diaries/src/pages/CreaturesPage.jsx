@@ -106,7 +106,7 @@ const CreaturesPage = () => {
         <div className="creatures-list" role="list" aria-label="Lista de criaturas">
           {allItems.map((item) => (
             <CreatureListItem
-              key={item.id}
+              key={`${item.type}-${item.id}`}
               item={item}
               isExpanded={expandedId === item.id}
               isGM={currentUser.isGM}

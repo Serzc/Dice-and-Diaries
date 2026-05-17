@@ -34,8 +34,8 @@ export function AuthProvider({ children }) {
     return u;
   };
 
-  const register = async (username, password) => {
-    const u = await registerUser(username, password);
+  const register = async (username, email, password) => {
+    const u = await registerUser(username, email, password);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
     setCurrentUser(u);
     setUser(u);

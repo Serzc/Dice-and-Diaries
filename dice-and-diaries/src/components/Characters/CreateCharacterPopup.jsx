@@ -1,12 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createCharacter } from "../../mock/db";
 import "../common/Popup.css";
 
 const CreateCharacterPopup = ({ onClose }) => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleCreate = () => {
-    navigate("/characters/new");
+  const handleCreate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { id } = await createCharacter();
+      navigate(`/characters/${id}`);
+    } catch (e) {
+      setError("Error al crear el personaje. Inténtalo de nuevo.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -19,13 +30,16 @@ const CreateCharacterPopup = ({ onClose }) => {
 
         <div className="popup-body">
           <p className="popup-desc">
-            Serás redirigido a la hoja de creación de personaje para configurar todos sus atributos.
+            Se creará una hoja en blanco y serás redirigido para configurar todos sus atributos.
           </p>
+          {error && <p style={{ color: "#dc2626", fontSize: "0.88rem", marginTop: "0.5rem" }}>{error}</p>}
         </div>
 
         <div className="popup-footer">
-          <button className="primary-button" onClick={handleCreate}>Crear</button>
-          <button className="primary-button" onClick={onClose}>Cancelar</button>
+          <button className="primary-button" onClick={handleCreate} disabled={loading}>
+            {loading ? "Creando..." : "Crear"}
+          </button>
+          <button className="primary-button" onClick={onClose} disabled={loading}>Cancelar</button>
         </div>
       </div>
     </div>

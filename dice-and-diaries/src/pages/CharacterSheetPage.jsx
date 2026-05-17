@@ -51,6 +51,7 @@ const CharacterSheetPage = () => {
   const [character,       setCharacter]       = useState(null);
   const [loading,         setLoading]         = useState(true);
   const [showImpersonate, setShowImpersonate] = useState(false);
+  const [restTrigger,     setRestTrigger]     = useState({ type: null, count: 0 });
 
   useEffect(() => {
     fetchCharacterSheet(id).then(rawData => {
@@ -90,6 +91,18 @@ const CharacterSheetPage = () => {
         };
       }
 
+      // Recompute saving throws when proficiencies or ability scores change
+      if ("saveProficiencies" in partialData || "abilityScores" in partialData) {
+        const profs = updated.saveProficiencies ?? [];
+        const mods  = updated.abilityModifiers;
+        const pb    = updated.proficiencyBonus ?? 2;
+        const st    = {};
+        for (const ab of ["str","dex","con","int","wis","cha"]) {
+          st[ab] = (mods[ab] ?? 0) + (profs.includes(ab) ? pb : 0);
+        }
+        updated.savingThrows = st;
+      }
+
       // Persist to mock / real DB
       const coreKeys = ["name","classes","species","background","level","imageUrl",
                         "abilityScores","combatInfo","saveProficiencies","skillProficiencies",
@@ -104,6 +117,27 @@ const CharacterSheetPage = () => {
 
       return updated;
     });
+  }, [id]);
+
+  const handleRest = useCallback((type) => {
+    setRestTrigger(prev => ({ type, count: prev.count + 1 }));
+
+    if (type === "LR") {
+      // Long rest: restore all HP and all hit dice
+      setCharacter(prev => {
+        if (!prev) return prev;
+        const updated = {
+          ...prev,
+          combatInfo: {
+            ...prev.combatInfo,
+            currentHp:       prev.combatInfo.hpMax,
+            hitDiceRemaining: prev.combatInfo.hitDiceTotal,
+          },
+        };
+        saveCharacterSection(id, "core", toDatabase(updated));
+        return updated;
+      });
+    }
   }, [id]);
 
   if (loading || !character) return <div className="loading">Cargando hoja de personaje...</div>;
@@ -137,13 +171,14 @@ const CharacterSheetPage = () => {
           <CombatInfoSection
             combatInfo={character.combatInfo}
             onSave={(data) => updateCharacter(data)}
+            onRest={handleRest}
           />
         </div>
         <div className="sheet-area area-actions">
-          <ActionsPanel characterId={character.id} onSave={(data) => updateCharacter({ actions: data })} />
+          <ActionsPanel characterId={character.id} onSave={(data) => updateCharacter({ actions: data })} restTrigger={restTrigger} />
         </div>
         <div className="sheet-area area-bonus-actions">
-          <BonusActionsPanel characterId={character.id} onSave={(data) => updateCharacter({ bonusActions: data })} />
+          <BonusActionsPanel characterId={character.id} onSave={(data) => updateCharacter({ bonusActions: data })} restTrigger={restTrigger} />
         </div>
         <div className="sheet-area area-other-profs">
           <OtherProficienciesPanel
@@ -152,10 +187,10 @@ const CharacterSheetPage = () => {
           />
         </div>
         <div className="sheet-area area-features">
-          <FeaturesList characterId={character.id} onSave={(data) => updateCharacter({ features: data })} />
+          <FeaturesList characterId={character.id} onSave={(data) => updateCharacter({ features: data })} restTrigger={restTrigger} />
         </div>
         <div className="sheet-area area-spells">
-          <SpellsList character={character} onSave={(data) => updateCharacter(data)} />
+          <SpellsList character={character} onSave={(data) => updateCharacter(data)} restTrigger={restTrigger} />
         </div>
         <div className="sheet-area area-inventory">
           <InventoryList characterId={character.id} onSave={(data) => updateCharacter({ inventory: data })} />
