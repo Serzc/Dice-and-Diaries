@@ -2,7 +2,7 @@
 // Provides auth state backed by localStorage.
 // Lifetime: persists across page refreshes until logout() is called.
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { loginUser, setCurrentUser } from "../mock/db";
+import { loginUser, registerUser, setCurrentUser } from "../mock/db";
 
 const AuthContext = createContext(null);
 
@@ -34,6 +34,14 @@ export function AuthProvider({ children }) {
     return u;
   };
 
+  const register = async (username, password) => {
+    const u = await registerUser(username, password);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+    setCurrentUser(u);
+    setUser(u);
+    return u;
+  };
+
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY);
     setCurrentUser({ id: null, isGM: false });
@@ -41,7 +49,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

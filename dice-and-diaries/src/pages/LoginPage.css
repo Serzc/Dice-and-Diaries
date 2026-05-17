@@ -160,3 +160,27 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* Mode toggle */
+.login-switch {
+  margin: 0.25rem 0 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+
+.login-switch-btn {
+  background: none;
+  border: none;
+  color: rgba(179, 136, 214, 0.9);
+  font-size: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.login-switch-btn:hover {
+  color: var(--color-white);
+}

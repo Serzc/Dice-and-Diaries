@@ -186,6 +186,26 @@ function _deserializeCharacter(row, campaignIds = []) {
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
+export async function registerUser(username, password) {
+  const { data: existing } = await supabase
+    .from("User")
+    .select("id")
+    .eq("username", username)
+    .limit(1);
+
+  if (existing?.length) throw new Error("El nombre de usuario ya está en uso");
+
+  const { data, error } = await supabase
+    .from("User")
+    .insert({ username, passwordHash: password, active: true })
+    .select()
+    .single();
+
+  if (error) throw new Error("Error al crear la cuenta");
+  const { passwordHash: _pw, ...safeUser } = data;
+  return { ...safeUser, isGM: false };
+}
+
 export async function loginUser(username, password) {
   const { data: users, error } = await supabase
     .from("User")

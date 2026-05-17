@@ -10,7 +10,6 @@ const LoginPage = () => {
           <p className="login-welcome">Bienvenido a</p>
           <h1 id="login-heading"><span className="brand-pill">Dice and Diaries</span></h1>
         </div>
-        <p className="login-subtitle">Iniciar sesión</p>
         <LoginForm />
       </div>
     </main>
