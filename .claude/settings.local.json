@@ -3,7 +3,8 @@
     "allow": [
       "Bash(node --check src/utils/characterDataAdapter.js)",
       "Bash(node --check src/components/CharacterSheet/AbilityScoresSection.jsx)",
-      "Bash(node --check src/components/CharacterSheet/AbilityProficienciesSection.jsx)"
+      "Bash(node --check src/components/CharacterSheet/AbilityProficienciesSection.jsx)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\josei\\\\OneDrive\\\\Documents\\\\GitHub\\\\Dice-and-Diaries\\\\dice-and-diaries\\\\src\" -Recurse | Where-Object { $_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)"
     ]
   }
 }
