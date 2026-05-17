@@ -119,8 +119,8 @@ const HomePage = () => {
                 {joining ? "Uniéndose..." : "Unirse"}
               </button>
             </div>
-            {joinError && <p className="join-error">{joinError}</p>}
-            {joinSuccess && <p className="join-success">{joinSuccess}</p>}
+            {joinError && <p className="join-error" role="alert">{joinError}</p>}
+            {joinSuccess && <p className="join-success" role="status" aria-live="polite">{joinSuccess}</p>}
           </section>
         )}
 

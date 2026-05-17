@@ -108,9 +108,13 @@ const ChatPage = () => {
       <div className="chat-main-area">
         <h1 className="chat-title">{chatData.campaign.name} – Chat</h1>
         {possessedNPC && (
-          <div className="possess-banner" role="alert">
+          <div className="possess-banner" role="status" aria-live="polite">
             <span>Hablando como <strong>{possessedNPC.name}</strong></span>
-            <button className="possess-release-btn" onClick={() => setPossessedNPC(null)}>
+            <button
+              className="possess-release-btn"
+              onClick={() => setPossessedNPC(null)}
+              aria-label={`Dejar de hablar como ${possessedNPC.name}`}
+            >
               Soltar
             </button>
           </div>

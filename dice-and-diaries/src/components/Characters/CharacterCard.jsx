@@ -39,18 +39,18 @@ const CharacterCard = ({ character, onUpdated }) => {
   };
 
   const abilityEntries = [
-    { key: "str", label: "STR" },
-    { key: "dex", label: "DEX" },
-    { key: "con", label: "CON" },
-    { key: "int", label: "INT" },
-    { key: "wis", label: "WIS" },
-    { key: "cha", label: "CHA" },
+    { key: "str", label: "STR", full: "Fuerza" },
+    { key: "dex", label: "DEX", full: "Destreza" },
+    { key: "con", label: "CON", full: "Constitución" },
+    { key: "int", label: "INT", full: "Inteligencia" },
+    { key: "wis", label: "WIS", full: "Sabiduría" },
+    { key: "cha", label: "CHA", full: "Carisma" },
   ];
 
   const column1 = abilityEntries.slice(0, 3);
   const column2 = abilityEntries.slice(3, 6);
 
-  const getStatClass = (key, value) => {
+  const getStatClass = (_key, value) => {
     if (value >= 16) return "stat-high";
     if (value <= 8) return "stat-low";
     return "";
@@ -60,58 +60,69 @@ const CharacterCard = ({ character, onUpdated }) => {
     <>
       <Card
         className="character-card"
-        role="button"
-        tabIndex="0"
+        role="article"
+        aria-labelledby={`char-name-${character.id}`}
         onClick={handleCardClick}
-        onKeyDown={(e) => e.key === "Enter" && handleCardClick()}
-        aria-label={`Ver hoja de personaje de ${character.name}`}
       >
-        {/* Dark portrait section */}
+        {/* Portrait — presentational, name heading already identifies the character */}
         <div className="card-portrait">
           <img
             src={character.imageUrl}
-            alt={`Retrato de ${character.name}`}
+            alt=""
+            role="presentation"
             className="character-image"
           />
         </div>
 
-        {/* White info section */}
         <div className="card-info">
-          <h2 className="character-name">{character.name}</h2>
-          <p className="character-classes">{character.classes.join(" / ")}</p>
-          <p className="character-level">Nivel {character.level}</p>
+          {/* h2 wrapping a button: heading navigation + keyboard activation */}
+          <h2 id={`char-name-${character.id}`} className="character-name">
+            <button
+              className="character-name-btn"
+              onClick={(e) => { e.stopPropagation(); handleCardClick(); }}
+              aria-label={`Ver hoja de ${character.name}, ${character.classes.join(", ")}, Nivel ${character.level}`}
+            >
+              {character.name}
+            </button>
+          </h2>
+          <p className="character-classes" aria-hidden="true">{character.classes.join(" / ")}</p>
+          <p className="character-level" aria-hidden="true">Nivel {character.level}</p>
 
-          <div className="ability-scores">
+          <dl className="ability-scores" aria-label="Puntuaciones de característica">
             <div className="ability-column">
               {column1.map((ab) => (
                 <div key={ab.key} className={`ability-row ${getStatClass(ab.key, character.stats[ab.key])}`}>
-                  <span className="ability-label">{ab.label}</span>
-                  <span className="ability-value">{character.stats[ab.key]}</span>
+                  <dt className="ability-label">
+                    <abbr title={ab.full} lang="en">{ab.label}</abbr>
+                  </dt>
+                  <dd className="ability-value">{character.stats[ab.key]}</dd>
                 </div>
               ))}
             </div>
             <div className="ability-column">
               {column2.map((ab) => (
                 <div key={ab.key} className={`ability-row ${getStatClass(ab.key, character.stats[ab.key])}`}>
-                  <span className="ability-label">{ab.label}</span>
-                  <span className="ability-value">{character.stats[ab.key]}</span>
+                  <dt className="ability-label">
+                    <abbr title={ab.full} lang="en">{ab.label}</abbr>
+                  </dt>
+                  <dd className="ability-value">{character.stats[ab.key]}</dd>
                 </div>
               ))}
             </div>
-          </div>
+          </dl>
 
           <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
             <Button
               onClick={(e) => { e.stopPropagation(); setShowNotes(true); }}
-              ariaLabel={`Ver notas de campañas de ${character.name}`}
+              ariaLabel={`Notas de campaña de ${character.name}`}
             >
-              📋 Mis Notas
+              <span aria-hidden="true">📋</span> Mis Notas
             </Button>
             <Button
               onClick={(e) => { e.stopPropagation(); openCampaignPicker(); }}
               ariaLabel={`Añadir ${character.name} a una campaña`}
             >
-              ⚔ Campaña
+              <span aria-hidden="true">⚔</span> Campaña
             </Button>
           </div>
         </div>
@@ -126,10 +137,10 @@ const CharacterCard = ({ character, onUpdated }) => {
       )}
 
       {showCampaign && (
-        <div className="popup-overlay" onClick={() => setShowCampaign(false)} role="dialog" aria-modal="true" aria-label="Añadir a campaña">
+        <div className="popup-overlay" onClick={() => setShowCampaign(false)} role="dialog" aria-modal="true" aria-labelledby={`add-campaign-title-${character.id}`}>
           <div className="popup-content" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
             <div className="popup-header">
-              <h3 className="popup-title">Añadir a campaña</h3>
+              <h3 id={`add-campaign-title-${character.id}`} className="popup-title">Añadir a campaña</h3>
               <button className="popup-close-btn" onClick={() => setShowCampaign(false)} aria-label="Cerrar">✕</button>
             </div>
             <div className="popup-body">
@@ -144,6 +155,8 @@ const CharacterCard = ({ character, onUpdated }) => {
                         <button
                           onClick={() => handleToggleCampaign(camp.id)}
                           disabled={linking || isLinked}
+                          aria-pressed={isLinked}
+                          aria-label={isLinked ? `${camp.name} ya añadida` : `Añadir a ${camp.name}`}
                           style={{
                             width: "100%", textAlign: "left", padding: "0.5rem 0.75rem",
                             borderRadius: "var(--radius-sm)", cursor: isLinked ? "default" : "pointer",

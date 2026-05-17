@@ -69,30 +69,33 @@ const CreaturesPage = () => {
   return (
     <main className="creatures-page" aria-labelledby="creatures-heading">
       {/* Breadcrumb / navegación de carpetas */}
-      {isInsideFolder && (
-        <nav className="creatures-breadcrumb" aria-label="Ruta de carpeta">
-          <button
-            className="breadcrumb-back-btn"
-            onClick={handleBack}
-            aria-label="Volver"
-          >
-            &#8592;
-          </button>
-          <span className="breadcrumb-path">
-            {data.breadcrumb.length > 1 && (
-              <>
-                <span className="breadcrumb-ellipsis">...</span>
-                <span className="breadcrumb-sep"> / </span>
-              </>
-            )}
-            <span className="breadcrumb-current">
-              {data.currentFolder ? data.currentFolder.name : "Raiz"}
+      {isInsideFolder ? (
+        <>
+          <h1 id="creatures-heading" className="sr-only">
+            {data.currentFolder ? data.currentFolder.name : "Raíz"} — Criaturas
+          </h1>
+          <nav className="creatures-breadcrumb" aria-label="Ruta de carpeta">
+            <button
+              className="breadcrumb-back-btn"
+              onClick={handleBack}
+              aria-label="Volver a la carpeta anterior"
+            >
+              &#8592;
+            </button>
+            <span className="breadcrumb-path">
+              {data.breadcrumb.length > 1 && (
+                <>
+                  <span className="breadcrumb-ellipsis" aria-hidden="true">...</span>
+                  <span className="breadcrumb-sep" aria-hidden="true"> / </span>
+                </>
+              )}
+              <span className="breadcrumb-current" aria-current="page">
+                {data.currentFolder ? data.currentFolder.name : "Raíz"}
+              </span>
             </span>
-          </span>
-        </nav>
-      )}
-
-      {!isInsideFolder && (
+          </nav>
+        </>
+      ) : (
         <h1 id="creatures-heading" className="page-title">
           Mis Criaturas
         </h1>
@@ -123,10 +126,9 @@ const CreaturesPage = () => {
       <button
         className="fab-create"
         aria-label="Crear nueva criatura o carpeta"
-        title="Crear"
         onClick={() => setShowCreate(true)}
       >
-        +
+        <span aria-hidden="true">+</span>
       </button>
 
       {showCreate && (

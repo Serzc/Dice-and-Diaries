@@ -187,10 +187,9 @@ const CampaignsPage = () => {
       <button
         className="fab-create-campaign"
         aria-label="Crear nueva campaña"
-        title="Crear campaña"
         onClick={() => setShowCreate(true)}
       >
-        +
+        <span aria-hidden="true">+</span>
       </button>
 
       {showCreate && (
