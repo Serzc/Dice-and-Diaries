@@ -21,10 +21,10 @@ const CreateCharacterPopup = ({ onClose }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Crear nuevo personaje">
+    <div className="popup-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="create-char-title">
       <div className="popup-content" onClick={e => e.stopPropagation()}>
         <div className="popup-header">
-          <h3 className="popup-title">Crear Personaje</h3>
+          <h3 id="create-char-title" className="popup-title">Crear Personaje</h3>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 

@@ -7,7 +7,7 @@ import WhisperPopup from "./WhisperPopup";
 import NPCsPopup from "./NPCsPopup";
 import "./ChatSidebar.css";
 
-const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, campaignId, currentUserId, onSendDiceRoll, onSendWhisper, onSendAbilityAppend, onSendNoteAppend, onNoteCreated, onPossessNPC }) => {
+const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, campaignId, currentUserId, onSendDiceRoll, onSendWhisper, onSendAbilityAppend, onSendNoteAppend, onNoteCreated, onPossessNPC, onPossessCharacter }) => {
   const [activePopup, setActivePopup] = useState(null);
 
   const closePopup = () => setActivePopup(null);
@@ -52,9 +52,7 @@ const ChatSidebar = ({ isGM, characters, notes, onlineUsers, npcs, campaignId, c
         <CharacterSheetPopup
           characters={characters}
           onSelect={(char) => {
-            // Al seleccionar un personaje, se podría cambiar la identidad del habla
-            // Pero aquí solo mostramos. Luego se puede integrar.
-            closePopup();
+            onPossessCharacter && onPossessCharacter(char);
           }}
           onClose={closePopup}
         />

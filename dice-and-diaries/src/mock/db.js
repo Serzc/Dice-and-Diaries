@@ -118,9 +118,10 @@ function _normMessage(msg) {
     chatId:          msg.chatid,
     senderId:        msg.senderid,
     senderUsername:  msg.senderusername,
-    characterId:     msg.characterid,
-    characterName:   msg.charactername,
-    characterAvatar: msg.characteravatar,
+    characterId:         msg.characterid,
+    characterName:       msg.charactername,
+    characterAvatar:     msg.characteravatar,
+    characterAppearance: msg.characterappearance ?? null,
     isWhisper:       msg.iswhisper,
     whisperTo:       msg.whisperto,
     content,
@@ -226,6 +227,7 @@ function _deserializeCharacter(row, campaignIds = []) {
     stored_features: _parseJSON(row.features, []),
     character_note:  _parseJSON(row.characternote, { id: Date.now(), title: "Historia", content: "" }),
     proficiency_list:_parseJSON(row.proficiencylist, []),
+    appearance:      row.appearance ?? "",
     campaign_ids:    campaignIds,
     spellcasting: {
       ability: row.spellcastingability || "int",
@@ -289,7 +291,7 @@ export async function loginUser(username, password) {
 export async function fetchCampaigns(userId = CURRENT_USER_ID) {
   const { data: memberships } = await supabase
     .from("UserXCampaign")
-    .select("campaignid")
+    .select("campaignid, role")
     .eq("userid", userId);
 
   const ids = (memberships || []).map(m => m.campaignid);
@@ -306,12 +308,14 @@ export async function fetchCampaigns(userId = CURRENT_USER_ID) {
   return (campaigns || []).map(c => {
     const members   = (allMembers   || []).filter(m => m.campaignid === c.id);
     const playerIds = members.map(m => m.userid);
+    const myRole    = (memberships  || []).find(m => Number(m.campaignid) === Number(c.id))?.role ?? null;
     return {
       ..._normCampaign(c),
       players:      playerIds,
       playersCount: playerIds.length,
       npcsCount:    (creatureLinks || []).filter(cr => cr.campaignid === c.id).length,
       notesCount:   (notes         || []).filter(n  => n.campaignid  === c.id).length,
+      myRole,
     };
   });
 }
@@ -461,7 +465,7 @@ export async function invitePlayer(campaignId, username) {
 // ── Character functions ───────────────────────────────────────────────────────
 export async function fetchUserCharacters(userId = CURRENT_USER_ID) {
   const { data: chars } = await supabase
-    .from("Character").select("id, name, classes, level, species, background, imageurl, ownerid")
+    .from("Character").select("id, name, classes, level, species, background, imageurl, abilityscores, ownerid")
     .eq("ownerid", userId).eq("active", true);
 
   if (!chars?.length) return [];
@@ -483,7 +487,7 @@ export async function fetchUserCharacters(userId = CURRENT_USER_ID) {
     species:    c.species,
     background: c.background,
     imageUrl:   c.imageurl,
-    stats:      {},
+    stats:      _parseAbil(c.abilityscores),
     campaigns: (links || [])
       .filter(l => l.characterid === c.id)
       .map(l => { const camp = (allCamps || []).find(x => x.id === l.campaignid); return camp ?? null; })
@@ -584,6 +588,32 @@ export async function saveCharacterSection(characterId, section, data) {
   const { error } = await supabase.from("Character").update(update).eq("id", id);
   if (error) console.error("saveCharacterSection error:", error);
   return { success: !error };
+}
+
+export async function uploadCharacterImage(characterId, file) {
+  const ext = file.name.split(".").pop();
+  const path = `${characterId}/${Date.now()}.${ext}`;
+  const { error: upErr } = await supabase.storage
+    .from("character-images")
+    .upload(path, file, { upsert: true });
+  if (upErr) throw upErr;
+  const { data } = supabase.storage.from("character-images").getPublicUrl(path);
+  const url = data.publicUrl;
+  await supabase.from("Character").update({ imageurl: url }).eq("id", Number(characterId));
+  return url;
+}
+
+export async function uploadCampaignImage(campaignId, file) {
+  const ext = file.name.split(".").pop();
+  const path = `${campaignId}/${Date.now()}.${ext}`;
+  const { error: upErr } = await supabase.storage
+    .from("campaign-images")
+    .upload(path, file, { upsert: true });
+  if (upErr) throw upErr;
+  const { data } = supabase.storage.from("campaign-images").getPublicUrl(path);
+  const url = data.publicUrl;
+  await supabase.from("Campaign").update({ imageurl: url }).eq("id", Number(campaignId));
+  return url;
 }
 
 export async function fetchCharacterNotesInCampaign(_characterId, _campaignId) {
@@ -714,6 +744,10 @@ export async function fetchCreature(creatureId) {
 
 export async function saveCreature(id, data) {
   const numId = Number(id);
+  const { data: row } = await supabase.from("Creature").select("ownerid").eq("id", numId).single();
+  if (!row || Number(row.ownerid) !== Number(CURRENT_USER_ID)) {
+    return { success: false, error: "No autorizado" };
+  }
   const serialized = _serializeCreature(data);
   delete serialized.ownerid;
   const { error } = await supabase.from("Creature").update(serialized).eq("id", numId);
@@ -747,6 +781,15 @@ export async function createFolder(name, parentId = null) {
 }
 
 export async function addCreatureToCampaign(creatureId, campaignId) {
+  const { data: membership } = await supabase
+    .from("UserXCampaign")
+    .select("role")
+    .eq("userid", CURRENT_USER_ID)
+    .eq("campaignid", Number(campaignId))
+    .single();
+  if (!membership || membership.role !== "gm") {
+    throw new Error("Solo los DMs pueden añadir criaturas a la campaña");
+  }
   const cid = Number(creatureId);
   await supabase
     .from("CreatureXCampaign")
@@ -813,7 +856,7 @@ export async function fetchCampaignNotes(campaignId, isGM) {
     .from("Campaign").select("name").eq("id", numId).single();
 
   let query = supabase.from("Note").select("*").eq("campaignid", numId).eq("active", true);
-  if (!isGM) query = query.eq("ispublic", true);
+  if (!isGM) query = query.or(`ispublic.eq.true,authorid.eq.${CURRENT_USER_ID}`);
   const { data: notes } = await query;
 
   return {
@@ -894,10 +937,10 @@ export async function fetchChatData(campaignId) {
   if (myCharIds.length) {
     const { data: chars } = await supabase
       .from("Character")
-      .select("id, name, imageurl, ownerid")
+      .select("id, name, imageurl, appearance, ownerid")
       .in("id", myCharIds)
       .eq("ownerid", CURRENT_USER_ID);
-    userCharacters = (chars || []).map(ch => ({ id: ch.id, name: ch.name, avatar: ch.imageurl }));
+    userCharacters = (chars || []).map(ch => ({ id: ch.id, name: ch.name, avatar: ch.imageurl, appearance: ch.appearance ?? "" }));
   }
 
   const npcIds = (creatureLinks || []).map(l => l.creatureid);
@@ -913,6 +956,7 @@ export async function fetchChatData(campaignId) {
     .map(u => ({ id: u.id, username: u.username }));
 
   return {
+    chatId,
     campaign:     camp ? _normCampaign(camp) : { id: campaignId, name: `Campaña ${campaignId}` },
     currentUser:  { id: CURRENT_USER_ID, username: (users || []).find(u => u.id === CURRENT_USER_ID)?.username ?? "", isGM: gmEntry?.userid === CURRENT_USER_ID },
     messages:     (messages || []).map(_normMessage),
@@ -920,6 +964,18 @@ export async function fetchChatData(campaignId) {
     npcs,
     onlineUsers,
   };
+}
+
+export function subscribeToChatMessages(chatId, onInsert) {
+  const channel = supabase
+    .channel(`chat-${chatId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "Message", filter: `chatid=eq.${chatId}` },
+      (payload) => onInsert(_normMessage(payload.new))
+    )
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 }
 
 export async function sendMessage(campaignId, messageData) {
@@ -940,9 +996,10 @@ export async function sendMessage(campaignId, messageData) {
       chatid:          chatId,
       senderid:        messageData.senderId,
       senderusername:  messageData.senderUsername,
-      characterid:     Number.isInteger(messageData.characterId) ? messageData.characterId : null,
-      charactername:   messageData.characterName   || null,
-      characteravatar: messageData.characterAvatar || null,
+      characterid:          Number.isInteger(messageData.characterId) ? messageData.characterId : null,
+      charactername:        messageData.characterName       || null,
+      characteravatar:      messageData.characterAvatar     || null,
+      characterappearance:  messageData.characterAppearance || null,
       type:            messageData.type,
       content,
       iswhisper:       messageData.isWhisper  || false,

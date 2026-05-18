@@ -39,10 +39,9 @@ const CharactersPage = () => {
       <button
         className="fab-create"
         aria-label="Crear nuevo personaje"
-        title="Crear personaje"
         onClick={() => setShowCreate(true)}
       >
-        +
+        <span aria-hidden="true">+</span>
       </button>
 
       {showCreate && (

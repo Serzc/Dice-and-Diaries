@@ -70,6 +70,21 @@ body:has(.campaigns-page) #root {
   transform: scale(1.08);
 }
 
+.cc-image-picker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cc-image-preview {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-primary);
+}
+
 .cc-invite-code {
   font-size: 2rem;
   font-weight: 800;

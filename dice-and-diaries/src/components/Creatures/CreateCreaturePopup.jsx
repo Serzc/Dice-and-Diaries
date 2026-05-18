@@ -21,7 +21,7 @@ const defaultForm = {
   size: "Mediano",
   creatureType: "",
   alignment: "No alineado",
-  cr: "1",
+  cr: "1",  
   ac: 10,
   acNote: "",
   hpMax: 10,
@@ -83,6 +83,8 @@ const CreateCreaturePopup = ({ onClose, onFolderCreated, currentFolderId }) => {
       className="popup-overlay"
       role="dialog"
       aria-modal="true"
+      aria-labelledby="create-creature-title"
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
@@ -93,7 +95,7 @@ const CreateCreaturePopup = ({ onClose, onFolderCreated, currentFolderId }) => {
         {step === "choose" && (
           <>
             <div className="popup-header">
-              <h2 className="popup-title">Crear nuevo</h2>
+              <h2 id="create-creature-title" className="popup-title">Crear nuevo</h2>
               <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
             </div>
             <div className="popup-body cc-choose-body">
@@ -111,7 +113,7 @@ const CreateCreaturePopup = ({ onClose, onFolderCreated, currentFolderId }) => {
         {step === "creature" && (
           <form onSubmit={handleCreateCreature}>
             <div className="popup-header">
-              <h2 className="popup-title">Nueva Criatura</h2>
+              <h2 id="create-creature-title" className="popup-title">Nueva Criatura</h2>
               <button type="button" className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
             </div>
             <div className="popup-body">
@@ -255,7 +257,7 @@ const CreateCreaturePopup = ({ onClose, onFolderCreated, currentFolderId }) => {
         {step === "folder" && (
           <form onSubmit={handleCreateFolder}>
             <div className="popup-header">
-              <h2 className="popup-title">Nueva Carpeta</h2>
+              <h2 id="create-creature-title" className="popup-title">Nueva Carpeta</h2>
               <button type="button" className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
             </div>
             <div className="popup-body">

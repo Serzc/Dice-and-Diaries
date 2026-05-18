@@ -220,6 +220,7 @@ export function fromDatabase(raw) {
     background: raw.background,
     level,
     imageUrl: raw.imageUrl ?? raw.image_url,
+    appearance: raw.appearance ?? "",
     abilityScores,
     abilityModifiers,
     proficiencyBonus,
@@ -261,6 +262,7 @@ export function toDatabase(uiCharacter) {
     background:           uiCharacter.background,
     level:                uiCharacter.level,
     imageUrl:             uiCharacter.imageUrl,
+    appearance:           uiCharacter.appearance ?? "",
 
     abilityScores:        serializeAbilityScores(uiCharacter.abilityScores),
     saveProficiencies:    serializeSaveProficiencies(uiCharacter.saveProficiencies),

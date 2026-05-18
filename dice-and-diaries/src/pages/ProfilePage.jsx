@@ -55,38 +55,40 @@ const ProfilePage = () => {
         <div className="profile-avatar-section">
           <div className="profile-avatar" aria-hidden="true">{initials}</div>
           {isEditing && (
-            <button className="profile-avatar-change-btn">Cambiar foto</button>
+            <button className="profile-avatar-change-btn" aria-label="Cambiar foto de perfil">Cambiar foto</button>
           )}
         </div>
 
         {/* Info */}
         <div className="profile-info">
           <h1 id="profile-heading" className="profile-display-name">
-            {isEditing ? (
-              <input
-                className="profile-input"
-                value={form.displayName}
-                onChange={(e) => set("displayName", e.target.value)}
-                placeholder="Nombre completo"
-              />
-            ) : (
-              profile.displayName
-            )}
+            {profile.displayName}
           </h1>
           <p className="profile-username">@{profile.username}</p>
 
           {isEditing ? (
             <div className="profile-edit-fields">
-              <label className="profile-field-label">Email</label>
+              <label htmlFor="profile-display-name" className="profile-field-label">Nombre para mostrar</label>
               <input
+                id="profile-display-name"
+                className="profile-input"
+                value={form.displayName}
+                onChange={(e) => set("displayName", e.target.value)}
+                placeholder="Nombre completo"
+                autoFocus
+              />
+              <label htmlFor="profile-email" className="profile-field-label">Email</label>
+              <input
+                id="profile-email"
                 className="profile-input"
                 type="email"
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
                 placeholder="correo@ejemplo.com"
               />
-              <label className="profile-field-label">Biografía</label>
+              <label htmlFor="profile-bio" className="profile-field-label">Biografía</label>
               <textarea
+                id="profile-bio"
                 className="profile-textarea"
                 value={form.bio}
                 onChange={(e) => set("bio", e.target.value)}

@@ -44,20 +44,20 @@ const CreatureQuickView = ({ creature, isGM, onNavigateToSheet, onPossess }) => 
   return (
     <div className="creature-quick-view">
       {/* Fila de stats principales */}
-      <div className="quick-stats-row">
+      <dl className="quick-stats-row">
         <span className="quick-stat">
-          <span className="label">PV: </span>
-          <span className="value">{hp.current}/{hp.max}</span>
+          <dt className="label">PV:</dt>
+          <dd className="value">{hp.current}/{hp.max}</dd>
         </span>
         <span className="quick-stat">
-          <span className="label">CA: </span>
-          <span className="value">{ac}</span>
+          <dt className="label">CA:</dt>
+          <dd className="value">{ac}</dd>
         </span>
         <span className="quick-stat">
-          <span className="label">CR: </span>
-          <span className="value">{cr}</span>
+          <dt className="label">CR:</dt>
+          <dd className="value">{cr}</dd>
         </span>
-      </div>
+      </dl>
 
       <hr className="quick-divider" />
 
@@ -94,13 +94,18 @@ const CreatureQuickView = ({ creature, isGM, onNavigateToSheet, onPossess }) => 
 
       {/* Footer */}
       <div className="quick-footer">
-        <button className="btn-ver-hoja" onClick={handleNavigate}>
+        <button
+          className="btn-ver-hoja"
+          onClick={handleNavigate}
+          aria-label={`Ver hoja completa de ${creature.name}`}
+        >
           Ver hoja
         </button>
         {isGM && (
           <button
             className="btn-possess"
             onClick={() => onPossess && onPossess(creature)}
+            aria-label={`Poseer a ${creature.name} en el chat`}
           >
             Poseer
           </button>

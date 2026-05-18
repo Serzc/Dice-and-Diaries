@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchCampaigns, getCurrentUserId, createCampaign, toggleCampaignActive, deleteCampaign } from "../mock/db";
+import { fetchCampaigns, getCurrentUserId, createCampaign, toggleCampaignActive, deleteCampaign, uploadCampaignImage } from "../mock/db";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import CampaignCard from "../components/Campaigns/CampaignCard";
 import CampaignNotesPopup from "../components/Campaigns/CampaignNotesPopup";
@@ -9,17 +9,35 @@ import "./CampaignsPage.css";
 
 const CreateCampaignModal = ({ onClose, onCreated }) => {
   const contentRef = useRef(null);
+  const fileInputRef = useRef(null);
   useFocusTrap(contentRef);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [inviteCode, setInviteCode] = useState(null);
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
     const camp = await createCampaign({ name: name.trim(), description: description.trim() });
+    if (imageFile) {
+      try {
+        await uploadCampaignImage(camp.id, imageFile);
+        camp.imageUrl = URL.createObjectURL(imageFile);
+      } catch (err) {
+        console.error("Error al subir imagen de campaña:", err);
+      }
+    }
     setSaving(false);
     setInviteCode(camp.inviteCode);
     onCreated(camp);
@@ -61,6 +79,28 @@ const CreateCampaignModal = ({ onClose, onCreated }) => {
                 <label>Descripción (opcional)</label>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)}
                   rows={3} placeholder="Breve descripción..." />
+              </div>
+              <div className="form-group">
+                <label>Miniatura (opcional)</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageSelect}
+                />
+                <div className="cc-image-picker">
+                  {imagePreview && (
+                    <img src={imagePreview} alt="Vista previa" className="cc-image-preview" />
+                  )}
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {imageFile ? "Cambiar imagen" : "Elegir imagen"}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="popup-footer">
@@ -138,6 +178,7 @@ const CampaignsPage = () => {
               onStartSession={handleStartSession}
               onDelete={handleDelete}
               onNotesClick={() => setNotesTarget({ id: camp.id, name: camp.name, isGM: camp.ownerId === currentUserId })}
+              onImageUpdated={(updated) => setCampaigns(prev => prev.map(c => c.id === updated.id ? updated : c))}
             />
           ))}
         </div>
@@ -146,10 +187,9 @@ const CampaignsPage = () => {
       <button
         className="fab-create-campaign"
         aria-label="Crear nueva campaña"
-        title="Crear campaña"
         onClick={() => setShowCreate(true)}
       >
-        +
+        <span aria-hidden="true">+</span>
       </button>
 
       {showCreate && (

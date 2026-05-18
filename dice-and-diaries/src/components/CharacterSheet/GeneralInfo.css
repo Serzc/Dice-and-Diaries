@@ -105,3 +105,23 @@ input:focus, select:focus {
 .edit-button-wrapper {
   margin-top: 0.5rem;
 }
+
+.portrait-upload-btn {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.8rem;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.portrait-upload-btn:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+}
+
+.portrait-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -124,7 +124,11 @@ const CampaignPlayersPage = () => {
         </button>
         <h1 id="cp-heading" className="page-title cp-page-title">Jugadores</h1>
         {isGM && (
-          <button className="cp-invite-btn" onClick={() => setShowInvite(true)}>
+          <button
+            className="cp-invite-btn"
+            onClick={() => setShowInvite(true)}
+            aria-label="Invitar jugador a la campaña"
+          >
             + Invitar
           </button>
         )}
@@ -142,7 +146,7 @@ const CampaignPlayersPage = () => {
 
           return (
             <div key={player.id} className="cp-player-card" role="listitem">
-              <div className="cp-player-avatar">{initials}</div>
+              <div className="cp-player-avatar" aria-hidden="true">{initials}</div>
               <div className="cp-player-info">
                 <span className="cp-player-name">{player.displayName}</span>
                 <span className="cp-player-username">@{player.username}</span>

@@ -123,21 +123,17 @@ const CampaignNotesPopup = ({ campaignId, campaignName, isGM, onClose }) => {
                   placeholder="Escribe el contenido de la nota..."
                 />
               </div>
-              {isGM && (
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={form.isPublic}
-                    onChange={(e) => set("isPublic", e.target.checked)}
-                  />
-                  Visible para jugadores
-                </label>
-              )}
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={form.isPublic}
+                  onChange={(e) => set("isPublic", e.target.checked)}
+                />
+                Visible para todos
+              </label>
             </div>
           ) : notes.length === 0 ? (
-            <p className="cnp-status">
-              {isGM ? "No hay notas aún. Usa el botón + para crear una." : "No hay notas públicas en esta campaña."}
-            </p>
+            <p className="cnp-status">No hay notas aún. Usa el botón + para crear una.</p>
           ) : (
             <div className="cn-notes-list" role="list">
               {notes.map((note) => {
@@ -163,7 +159,7 @@ const CampaignNotesPopup = ({ campaignId, campaignName, isGM, onClose }) => {
                     {isExpanded && (
                       <div className="cn-note-body">
                         <p className="cn-note-content">{note.content}</p>
-                        {isGM && (
+                        {(isGM || note.authorId === currentUserId) && (
                           <div className="cn-note-actions">
                             <button className="cn-action-btn" onClick={() => startEdit(note)}>Editar</button>
                             <button className="cn-action-btn cn-action-delete" onClick={() => handleDelete(note)}>Eliminar</button>
@@ -190,9 +186,9 @@ const CampaignNotesPopup = ({ campaignId, campaignName, isGM, onClose }) => {
               </button>
               <button className="primary-button" onClick={cancelEdit}>Cancelar</button>
             </>
-          ) : isGM ? (
+          ) : (
             <button className="primary-button" onClick={startNew}>+ Nueva nota</button>
-          ) : null}
+          )}
         </div>
       </div>
     </div>

@@ -104,7 +104,7 @@ const CharacterSheetPage = () => {
       }
 
       // Persist to mock / real DB
-      const coreKeys = ["name","classes","species","background","level","imageUrl",
+      const coreKeys = ["name","classes","species","background","level","imageUrl","appearance",
                         "abilityScores","combatInfo","saveProficiencies","skillProficiencies",
                         "abilityProficiencies","spellcastingAbility"];
       const isCore = Object.keys(partialData).some(k => coreKeys.includes(k));

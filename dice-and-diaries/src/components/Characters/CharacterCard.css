@@ -72,12 +72,38 @@
   margin: 0 0 0.4rem 0;
 }
 
-/* Ability scores grid */
+/* Name-as-button: looks like plain heading text */
+.character-name-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+.character-name-btn:hover {
+  text-decoration: underline;
+}
+
+/* Ability scores grid — dl replaces div, reset browser dd indent */
 .ability-scores {
   display: flex;
   gap: 0.4rem;
   margin: 0.3rem 0 0.6rem 0;
   width: 100%;
+}
+
+.ability-scores dt,
+.ability-scores dd {
+  margin: 0;
+  padding: 0;
 }
 
 .ability-column {

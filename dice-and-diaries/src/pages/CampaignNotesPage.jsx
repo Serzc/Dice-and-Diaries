@@ -8,7 +8,7 @@ import "../components/common/Popup.css";
 import "./CampaignNotesPage.css";
 
 // ── Note edit popup ───────────────────────────────────────────────────────────
-const NotePopup = ({ note, campaignId, isGM, currentUserId, onClose, onSaved }) => {
+const NotePopup = ({ note, campaignId, currentUserId, onClose, onSaved }) => {
   const contentRef = useRef(null);
   useFocusTrap(contentRef);
   const isNew = !note;
@@ -82,16 +82,14 @@ const NotePopup = ({ note, campaignId, isGM, currentUserId, onClose, onSaved }) 
                 placeholder="Escribe el contenido de la nota..."
               />
             </div>
-            {isGM && (
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={form.isPublic}
-                  onChange={(e) => set("isPublic", e.target.checked)}
-                />
-                Visible para jugadores
-              </label>
-            )}
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={form.isPublic}
+                onChange={(e) => set("isPublic", e.target.checked)}
+              />
+              Visible para todos
+            </label>
           </div>
           <div className="popup-footer">
             <button type="submit" className="primary-button" disabled={saving || !form.title.trim()}>
@@ -159,7 +157,7 @@ const CampaignNotesPage = () => {
       setCampaign(campaign);
       const gm = campaign?.ownerId === currentUserId;
       setIsGM(gm);
-      setNotes(gm ? notes : notes.filter(n => n.isPublic));
+      setNotes(gm ? notes : notes.filter(n => n.isPublic || n.authorId === currentUserId));
       setLoading(false);
     });
   }, [campaignId, currentUserId]);
@@ -196,11 +194,7 @@ const CampaignNotesPage = () => {
       </div>
 
       {notes.length === 0 ? (
-        <p className="cn-empty">
-          {isGM
-            ? "No hay notas en esta campaña. Usa el botón + para crear una."
-            : "No hay notas públicas en esta campaña."}
-        </p>
+        <p className="cn-empty">No hay notas en esta campaña. Usa el botón + para crear una.</p>
       ) : (
         <div className="cn-notes-list" role="list">
           {notes.map((note) => (
@@ -225,7 +219,7 @@ const CampaignNotesPage = () => {
               {expandedId === note.id && (
                 <div className="cn-note-body">
                   <p className="cn-note-content">{note.content}</p>
-                  {isGM && (
+                  {(isGM || note.authorId === currentUserId) && (
                     <div className="cn-note-actions">
                       <button className="cn-action-btn" onClick={() => setEditingNote(note)}>
                         Editar
@@ -243,23 +237,20 @@ const CampaignNotesPage = () => {
       )}
 
       {/* FAB */}
-      {isGM && (
-        <button
-          className="cn-fab"
-          aria-label="Crear nueva nota"
-          title="Nueva nota"
-          onClick={() => setEditingNote(null)}
-        >
-          +
-        </button>
-      )}
+      <button
+        className="cn-fab"
+        aria-label="Crear nueva nota"
+        title="Nueva nota"
+        onClick={() => setEditingNote(null)}
+      >
+        +
+      </button>
 
       {/* Popups */}
       {editingNote !== undefined && (
         <NotePopup
           note={editingNote}
           campaignId={campaignId}
-          isGM={isGM}
           currentUserId={currentUserId}
           onClose={() => setEditingNote(undefined)}
           onSaved={handleSaved}

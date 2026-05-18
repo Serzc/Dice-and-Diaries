@@ -21,12 +21,13 @@ const NPCsPopup = ({ npcs, onClose, onPossess }) => {
       className="popup-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="NPCs de la campaña"
+      aria-labelledby="npcs-popup-title"
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="popup-content" onClick={(e) => e.stopPropagation()}>
         <div className="popup-header">
-          <h3 className="popup-title">NPCs</h3>
+          <h3 id="npcs-popup-title" className="popup-title">NPCs</h3>
           <button className="popup-close-btn" onClick={onClose} aria-label="Cerrar">&#x2715;</button>
         </div>
 
