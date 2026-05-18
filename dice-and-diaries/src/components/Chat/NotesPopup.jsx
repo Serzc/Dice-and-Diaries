@@ -76,11 +76,9 @@ const NotesPopup = ({ notes, campaignId, currentUserId, isGM, onAppend, onNoteCr
               )}
             </div>
             <div className="popup-footer">
-              {isGM && (
-                <button className="primary-button" onClick={() => setMode("new")}>
-                  + Nueva nota
-                </button>
-              )}
+              <button className="primary-button" onClick={() => setMode("new")}>
+                + Nueva nota
+              </button>
               <button className="primary-button" onClick={onClose}>Cerrar</button>
             </div>
           </>

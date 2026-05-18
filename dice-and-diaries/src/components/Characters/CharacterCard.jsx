@@ -64,12 +64,12 @@ const CharacterCard = ({ character, onUpdated }) => {
         aria-labelledby={`char-name-${character.id}`}
         onClick={handleCardClick}
       >
-        {/* Portrait — presentational, name heading already identifies the character */}
+        {/* Portrait — decorative if no appearance description, meaningful if one is set */}
         <div className="card-portrait">
           <img
             src={character.imageUrl}
-            alt=""
-            role="presentation"
+            alt={character.appearance || ""}
+            role={character.appearance ? undefined : "presentation"}
             className="character-image"
           />
         </div>

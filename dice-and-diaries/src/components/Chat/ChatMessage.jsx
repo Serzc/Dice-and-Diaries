@@ -1,7 +1,32 @@
 import React from "react";
 import "./ChatMessage.css";
 
-const ChatMessage = ({ message, isOwnMessage }) => {
+function getAriaLabel(message, senderDisplay) {
+  const time = message.timestamp
+    ? new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "";
+  const prefix = time ? `${senderDisplay}, ${time}` : senderDisplay;
+
+  switch (message.type) {
+    case "text":
+      return `${prefix}: ${message.content}`;
+    case "whisper":
+      return `Susurro de ${prefix}: ${message.content}`;
+    case "dice_roll": {
+      const { dice, total, advantage, disadvantage } = message.content ?? {};
+      const adv = advantage ? " con ventaja" : disadvantage ? " con desventaja" : "";
+      return `${prefix} tiró ${dice}${adv}, resultado ${total}`;
+    }
+    case "ability_append":
+      return `${prefix} comparte la habilidad: ${message.content?.abilityName ?? ""}`;
+    case "note_append":
+      return `${prefix} comparte la nota: ${message.content?.noteTitle ?? ""}`;
+    default:
+      return `Mensaje de ${prefix}`;
+  }
+}
+
+const ChatMessage = React.forwardRef(({ message, isOwnMessage, tabIndex }, ref) => {
   const isInCharacter = message.characterId !== null;
   const senderDisplay = isInCharacter
     ? message.characterName
@@ -41,9 +66,12 @@ const ChatMessage = ({ message, isOwnMessage }) => {
 
   return (
     <div
+      ref={ref}
+      data-msg-id={message.id}
       className={`chat-message ${isOwnMessage ? "own-message" : ""}`}
       role="listitem"
-      aria-label={`Mensaje de ${senderDisplay}`}
+      tabIndex={tabIndex ?? -1}
+      aria-label={getAriaLabel(message, senderDisplay)}
     >
       <div className="message-body">
         {renderContent()}
@@ -52,7 +80,7 @@ const ChatMessage = ({ message, isOwnMessage }) => {
         {message.characterAvatar && (
           <img
             src={message.characterAvatar}
-            alt={`Avatar de ${message.characterName}`}
+            alt={message.characterAppearance || `Avatar de ${message.characterName}`}
             className="avatar-small"
           />
         )}
@@ -63,7 +91,9 @@ const ChatMessage = ({ message, isOwnMessage }) => {
       </div>
     </div>
   );
-};
+});
+
+ChatMessage.displayName = "ChatMessage";
 
 // Subcomponente para tirada de dados
 const DiceRollDisplay = ({ roll }) => {
@@ -73,7 +103,7 @@ const DiceRollDisplay = ({ roll }) => {
   if (disadvantage) advantageText = " (con desventaja)";
 
   return (
-    <div className="dice-roll-result" aria-label={`Resultado de ${dice}: ${total}`}>
+    <div className="dice-roll-result">
       <span className="dice-icon">🎲</span>
       <span className="dice-notation">{dice}{advantageText}: </span>
       <span className="dice-results">[{results.join(", ")}]</span>

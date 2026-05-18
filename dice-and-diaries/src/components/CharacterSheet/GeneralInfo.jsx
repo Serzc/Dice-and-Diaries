@@ -14,6 +14,7 @@ const GeneralInfo = ({ character, onSave }) => {
     species: character.species,
     background: character.background,
     level: character.level,
+    appearance: character.appearance ?? "",
   });
 
   const handleEditToggle = () => {
@@ -22,7 +23,7 @@ const GeneralInfo = ({ character, onSave }) => {
         ...edited,
         classes: edited.classes.split("/").map(c => c.trim()).filter(Boolean),
       };
-      onSave({ name: updated.name, classes: updated.classes, species: updated.species, background: updated.background, level: updated.level });
+      onSave({ name: updated.name, classes: updated.classes, species: updated.species, background: updated.background, level: updated.level, appearance: updated.appearance });
       setIsEditing(false);
       setPreviewUrl(null);
     } else {
@@ -32,6 +33,7 @@ const GeneralInfo = ({ character, onSave }) => {
         species: character.species,
         background: character.background,
         level: character.level,
+        appearance: character.appearance ?? "",
       });
       setIsEditing(true);
     }
@@ -119,6 +121,20 @@ const GeneralInfo = ({ character, onSave }) => {
               <span className="field-value">{character.background}</span>
             )}
           </div>
+          <div className="info-field">
+            <label htmlFor="char-appearance">Apariencia</label>
+            {isEditing ? (
+              <textarea
+                id="char-appearance"
+                value={edited.appearance}
+                onChange={e => handleChange("appearance", e.target.value)}
+                placeholder="Describe la apariencia del personaje (se usa como texto alternativo en las imágenes)"
+                rows={3}
+              />
+            ) : (
+              <span className="field-value appearance-value">{character.appearance || <em>Sin descripción de apariencia</em>}</span>
+            )}
+          </div>
         </div>
 
         {/* Columna derecha: nivel, retrato, botón de editar */}
@@ -141,7 +157,7 @@ const GeneralInfo = ({ character, onSave }) => {
           <div className="character-portrait">
             <img
               src={previewUrl ?? character.imageUrl}
-              alt={`Retrato de ${character.name}`}
+              alt={isEditing ? (edited.appearance || `Retrato de ${character.name}`) : (character.appearance || `Retrato de ${character.name}`)}
               className="portrait-image"
             />
           </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { fetchChatData, fetchCampaignNotes, sendMessage as sendMessageApi, subscribeToChatMessages } from "../mock/db";
 import ChatMessage from "../components/Chat/ChatMessage";
@@ -20,6 +20,8 @@ const ChatPage = () => {
     return null;
   });
   const messagesEndRef = useRef(null);
+  const messageRefs = useRef({});
+  const initialFocusDone = useRef(false);
 
   useEffect(() => {
     let unsubscribe = null;
@@ -52,6 +54,49 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Auto-focus the last message on initial load; follow new messages if focus is already inside the container
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const lastMsg = messages[messages.length - 1];
+    const lastEl = messageRefs.current[lastMsg.id];
+    if (!lastEl) return;
+
+    if (!initialFocusDone.current) {
+      // Defer slightly so the DOM has painted
+      const t = setTimeout(() => {
+        lastEl.focus({ preventScroll: true });
+        initialFocusDone.current = true;
+      }, 150);
+      return () => clearTimeout(t);
+    }
+
+    // New message arrived: follow it only if user is already navigating messages
+    const active = document.activeElement;
+    if (active && active.dataset.msgId) {
+      lastEl.focus({ preventScroll: true });
+    }
+  }, [messages]);
+
+  const handleContainerKeyDown = useCallback((e) => {
+    const active = document.activeElement;
+    const currentId = Number(active?.dataset?.msgId);
+    if (!currentId) return;
+
+    const ids = messages.map(m => m.id);
+    const idx = ids.indexOf(currentId);
+    if (idx === -1) return;
+
+    let nextIdx = idx;
+    if      (e.key === "ArrowDown") nextIdx = Math.min(idx + 1, ids.length - 1);
+    else if (e.key === "ArrowUp")   nextIdx = Math.max(idx - 1, 0);
+    else if (e.key === "End")       nextIdx = ids.length - 1;
+    else if (e.key === "Home")      nextIdx = 0;
+    else return;
+
+    e.preventDefault();
+    messageRefs.current[ids[nextIdx]]?.focus({ preventScroll: false });
+  }, [messages]);
+
   const addMessage = (newMsg) => {
     setMessages((prev) => [...prev, newMsg]);
   };
@@ -64,6 +109,7 @@ const ChatPage = () => {
       characterId: possessedNPC ? possessedNPC.id : null,
       characterName: possessedNPC ? possessedNPC.name : null,
       characterAvatar: possessedNPC ? possessedNPC.avatar : null,
+      characterAppearance: possessedNPC ? possessedNPC.appearance : null,
       type: textData.type,
       content: textData.content,
       isWhisper: false,
@@ -135,12 +181,20 @@ const ChatPage = () => {
             </button>
           </div>
         )}
-        <div className="messages-container" role="log" aria-live="polite">
-          {messages.map((msg) => (
+        <div
+          className="messages-container"
+          role="list"
+          aria-live="polite"
+          aria-label="Mensajes del chat. Usa las flechas arriba y abajo para navegar entre mensajes."
+          onKeyDown={handleContainerKeyDown}
+        >
+          {messages.map((msg, index) => (
             <ChatMessage
               key={msg.id}
+              ref={(el) => { messageRefs.current[msg.id] = el; }}
               message={msg}
               isOwnMessage={msg.senderId === chatData.currentUser.id}
+              tabIndex={index === messages.length - 1 ? 0 : -1}
             />
           ))}
           <div ref={messagesEndRef} />
@@ -166,7 +220,7 @@ const ChatPage = () => {
           onSendAbilityAppend={handleSendAbilityAppend}
           onNoteCreated={(note) => setNotes((prev) => [note, ...prev])}
           onPossessNPC={setPossessedNPC}
-          onPossessCharacter={(char) => setPossessedNPC({ id: char.id, name: char.name, avatar: char.avatar ?? null })}
+          onPossessCharacter={(char) => setPossessedNPC({ id: char.id, name: char.name, avatar: char.avatar ?? null, appearance: char.appearance ?? null })}
         />
       )}
     </div>

@@ -118,9 +118,10 @@ function _normMessage(msg) {
     chatId:          msg.chatid,
     senderId:        msg.senderid,
     senderUsername:  msg.senderusername,
-    characterId:     msg.characterid,
-    characterName:   msg.charactername,
-    characterAvatar: msg.characteravatar,
+    characterId:         msg.characterid,
+    characterName:       msg.charactername,
+    characterAvatar:     msg.characteravatar,
+    characterAppearance: msg.characterappearance ?? null,
     isWhisper:       msg.iswhisper,
     whisperTo:       msg.whisperto,
     content,
@@ -226,6 +227,7 @@ function _deserializeCharacter(row, campaignIds = []) {
     stored_features: _parseJSON(row.features, []),
     character_note:  _parseJSON(row.characternote, { id: Date.now(), title: "Historia", content: "" }),
     proficiency_list:_parseJSON(row.proficiencylist, []),
+    appearance:      row.appearance ?? "",
     campaign_ids:    campaignIds,
     spellcasting: {
       ability: row.spellcastingability || "int",
@@ -463,7 +465,7 @@ export async function invitePlayer(campaignId, username) {
 // ── Character functions ───────────────────────────────────────────────────────
 export async function fetchUserCharacters(userId = CURRENT_USER_ID) {
   const { data: chars } = await supabase
-    .from("Character").select("id, name, classes, level, species, background, imageurl, ownerid")
+    .from("Character").select("id, name, classes, level, species, background, imageurl, abilityscores, ownerid")
     .eq("ownerid", userId).eq("active", true);
 
   if (!chars?.length) return [];
@@ -485,7 +487,7 @@ export async function fetchUserCharacters(userId = CURRENT_USER_ID) {
     species:    c.species,
     background: c.background,
     imageUrl:   c.imageurl,
-    stats:      {},
+    stats:      _parseAbil(c.abilityscores),
     campaigns: (links || [])
       .filter(l => l.characterid === c.id)
       .map(l => { const camp = (allCamps || []).find(x => x.id === l.campaignid); return camp ?? null; })
@@ -854,7 +856,7 @@ export async function fetchCampaignNotes(campaignId, isGM) {
     .from("Campaign").select("name").eq("id", numId).single();
 
   let query = supabase.from("Note").select("*").eq("campaignid", numId).eq("active", true);
-  if (!isGM) query = query.eq("ispublic", true);
+  if (!isGM) query = query.or(`ispublic.eq.true,authorid.eq.${CURRENT_USER_ID}`);
   const { data: notes } = await query;
 
   return {
@@ -935,10 +937,10 @@ export async function fetchChatData(campaignId) {
   if (myCharIds.length) {
     const { data: chars } = await supabase
       .from("Character")
-      .select("id, name, imageurl, ownerid")
+      .select("id, name, imageurl, appearance, ownerid")
       .in("id", myCharIds)
       .eq("ownerid", CURRENT_USER_ID);
-    userCharacters = (chars || []).map(ch => ({ id: ch.id, name: ch.name, avatar: ch.imageurl }));
+    userCharacters = (chars || []).map(ch => ({ id: ch.id, name: ch.name, avatar: ch.imageurl, appearance: ch.appearance ?? "" }));
   }
 
   const npcIds = (creatureLinks || []).map(l => l.creatureid);
@@ -994,9 +996,10 @@ export async function sendMessage(campaignId, messageData) {
       chatid:          chatId,
       senderid:        messageData.senderId,
       senderusername:  messageData.senderUsername,
-      characterid:     Number.isInteger(messageData.characterId) ? messageData.characterId : null,
-      charactername:   messageData.characterName   || null,
-      characteravatar: messageData.characterAvatar || null,
+      characterid:          Number.isInteger(messageData.characterId) ? messageData.characterId : null,
+      charactername:        messageData.characterName       || null,
+      characteravatar:      messageData.characterAvatar     || null,
+      characterappearance:  messageData.characterAppearance || null,
       type:            messageData.type,
       content,
       iswhisper:       messageData.isWhisper  || false,
