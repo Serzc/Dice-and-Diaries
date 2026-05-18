@@ -1050,7 +1050,7 @@ export async function saveProfile(data, userId = CURRENT_USER_ID) {
 }
 
 // ── Planner functions ─────────────────────────────────────────────────────────
-export async function fetchPlanner(campaignId) {
+export async function fetchPlanner(campaignId, weekStart = new Date()) {
   const { data: members } = await supabase
     .from("UserXCampaign").select("userid").eq("campaignid", Number(campaignId));
   const playerIds = (members || []).map(m => m.userid);
@@ -1058,7 +1058,7 @@ export async function fetchPlanner(campaignId) {
   const { data: users } = await supabase
     .from("User").select("id, username").in("id", playerIds);
 
-  const weekDays = getWeekDays(new Date());
+  const weekDays = getWeekDays(weekStart);
   const { data: avail } = await supabase
     .from("Availability")
     .select("userid, date, slots")
@@ -1087,7 +1087,7 @@ export async function fetchPlanner(campaignId) {
   };
 }
 
-export async function toggleSlot(date, slotId) {
+export async function toggleSlot(date, slotId, weekStart = new Date()) {
   const { data: existing } = await supabase
     .from("Availability")
     .select("id, slots")
@@ -1116,7 +1116,7 @@ export async function toggleSlot(date, slotId) {
       .insert({ userid: CURRENT_USER_ID, date, slots: updated.join(",") });
   }
 
-  const weekDays = getWeekDays(new Date());
+  const weekDays = getWeekDays(weekStart);
   const { data: allAvail } = await supabase
     .from("Availability")
     .select("date, slots")

@@ -50,7 +50,7 @@ const PlannerPage = () => {
     const key = `${date}-${slotId}`;
     if (toggling === key) return;
     setToggling(key);
-    const updated = await toggleSlot(date, slotId);
+    const updated = await toggleSlot(date, slotId, weekStart);
     setData((prev) => ({ ...prev, currentUserAvailability: updated }));
     setToggling(null);
   };
